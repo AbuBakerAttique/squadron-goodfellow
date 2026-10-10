@@ -10,9 +10,9 @@ Team repository: https://github.com/AbuBakerAttique/squadron-goodfellow
 
 | Member | Role |
 |---|---|
-| To be assigned | Historical Archivist |
-| To be assigned | Protocol Specialist |
-| To be assigned | Ethical Navigator |
+| Abubaker Attique | Historical Archivist |
+| Fatima Siddiqa | Protocol Specialist |
+| Syeda Manahil Javed | Ethical Navigator |
 | Abdul Jalil Memon | Core Architect |
 
 ### Mission 01 Deliverables
