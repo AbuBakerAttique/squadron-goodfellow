@@ -13,19 +13,35 @@ Team repository: https://github.com/AbuBakerAttique/squadron-goodfellow
 | To be assigned | Historical Archivist |
 | To be assigned | Protocol Specialist |
 | To be assigned | Ethical Navigator |
-| To be assigned | Core Architect |
+| Abdul Jalil Memon | Core Architect |
 
 ### Mission 01 Deliverables
 
-Deadline shown on the course portal: **18 October 2026**.
+### Part 1: Historical Archivist — *The Dialogic Alignment Brief*
+* **Deliverable:** `01_Alignment_Brief.md`
+* **Directives:**
+  1. Compare dialogue as Discovery vs Persuasion based on Plato's *Euthyphro* and Galileo's *Dialogue*.
+  2. Evaluate how modern LLMs (Gemini, ChatGPT, Claude) perform under Socratic probing.
+  3. Define system prompts establishing AURA's Socratic discovery persona.
 
-- [ ] `01_Alignment_Brief.md` — Comparison of Socratic discovery and Galilean persuasion, LLM evaluation, and grounding prompts.
-- [ ] `02_Socratic_Protocol_Map.md` — Socratic state-machine diagram, pseudocode, refinement loops, and stopping conditions.
-- [ ] `03_Galilean_Sandbox.md` — AI ethics scenario, three debate personas, and assessment of sycophancy or bias.
-- [ ] Runnable Python script or Jupyter notebook integrating both dialogue modes with live LLM API calls.
-- [ ] `05_Execution_Transcript.txt` — Full dialogue transcript from executing the engine.
-- [ ] Review and digital sign-off by all four team members.
+### Part 2: Protocol Specialist — *The Socratic State-Machine*
+* **Deliverable:** `02_Socratic_Protocol_Map.md`
+* **Directives:**
+  1. Reverse-engineer Socratic elenchus into a state machine diagram (Input claim $P_0$, probing steps, contradiction detection).
+  2. Define loop refinement $P_{k+1}$ and stopping criteria (Refined Definition vs Aporia).
 
+### Part 3: Ethical Navigator — *The Galilean Ethics Sandbox*
+* **Deliverable:** `03_Galilean_Sandbox.md`
+* **Directives:**
+  1. Cast 3 personas: Advocate (*Salviati*), Skeptic (*Simplicio*), Mediator (*Sagredo*).
+  2. Design an AI ethics thought experiment (e.g., *Open-Sourcing Frontier Models*).
+  3. Audit how multi-agent debate mitigates single-agent sycophancy or bias.
+
+### Part 4: Core Architect — *Engine Implementation*
+* **Deliverable:** `04_dialogic_engine_starter.py` / `ps01_solution.ipynb`
+* **Directives:**
+  1. Synthesize state machine and 3-agent debate loop in VS Code + Antigravity with modern LLMs (Gemini, ChatGPT, Claude).
+  2. Format output logs cleanly and manage squad repository layout.
 ### Setup and Execution
 
 Setup requirements and instructions for running the completed engine will be added during implementation.
