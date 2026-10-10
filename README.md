@@ -1,24 +1,35 @@
+## Squadron Goodfellow
 
-# Conversational AI (WS 2026/27) — Course Exercises & Missions
+This repository contains our team’s solutions for Conversational AI — Winter Semester 2026/27, based on the instructor’s starter repository.
 
-Welcome to the official exercises repository for **Conversational AI: History, Applications, and Future** (WS 2026/27).
+Instructor repository: https://github.com/Unisvet/couse-c-ai
 
----
+Team repository: https://github.com/AbuBakerAttique/squadron-goodfellow
 
-## Course Missions & Problem Sets
+### Team Members and Roles
 
-This repository contains the starter code, briefing specifications, deliverable templates, and Jupyter notebooks for each weekly mission:
+| Member | Role |
+|---|---|
+| To be assigned | Historical Archivist |
+| To be assigned | Protocol Specialist |
+| To be assigned | Ethical Navigator |
+| To be assigned | Core Architect |
 
-* 🚀 [**Mission 01 (`mission-01/`)**](./mission-01/): *The Architecture of Argument & Dialogic Protocols* (Socratic Elenchus & Galilean 3-Persona Debate)
-* 🚀 [**Mission 02 (`mission-02/`)**](./mission-02/): *FST Dialogue Systems, Lovelace's Objection & Noisy Channels* (Finite State Machines, Anti-Turing Probe & Shannon Noisy Channel)
+### Mission 01 Deliverables
 
----
+Deadline shown on the course portal: **18 October 2026**.
 
-## Instructions for Cadets
+- [ ] `01_Alignment_Brief.md` — Comparison of Socratic discovery and Galilean persuasion, LLM evaluation, and grounding prompts.
+- [ ] `02_Socratic_Protocol_Map.md` — Socratic state-machine diagram, pseudocode, refinement loops, and stopping conditions.
+- [ ] `03_Galilean_Sandbox.md` — AI ethics scenario, three debate personas, and assessment of sycophancy or bias.
+- [ ] Runnable Python script or Jupyter notebook integrating both dialogue modes with live LLM API calls.
+- [ ] `05_Execution_Transcript.txt` — Full dialogue transcript from executing the engine.
+- [ ] Review and digital sign-off by all four team members.
 
-1. **Clone or Download:** Clone this repository or copy the target mission folder (`mission-01/`, `mission-02/`) into your squad's workspace.
-2. **IDE Environment:** Work in **Visual Studio Code** using **Google Antigravity (`agy`)** and modern LLM APIs (Gemini, ChatGPT, Claude).
-3. **Submit Solution:** Push your squad's solution repository to GitHub and submit your public GitHub repository URL on the course portal for automated AI Agent evaluation.
+### Setup and Execution
 
+Setup requirements and instructions for running the completed engine will be added during implementation.
 
+### Submission
 
+Submit this public team repository’s URL through the course portal under **Bay 1 → Mission → Transmit Solution**, after completing all deliverables and obtaining all four station sign-offs.
