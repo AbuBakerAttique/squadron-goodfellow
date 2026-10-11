@@ -160,9 +160,76 @@ The consolidated findings and AURA system prompts are documented in:
 
 ## Setup and Execution
 
-Setup requirements and instructions for running the completed engine will be added by the Core Architect after the Python engine and Jupyter notebook have been implemented and tested.
+### 1) Prerequisites
 
-The completed implementation will require appropriate LLM API access.
+- Python 3.10+ recommended
+- A VS Code notebook environment for Jupyter support
+- Access to at least one supported LLM provider, or use the built-in mock provider for local testing
+
+### 2) Clone and open the project
+
+```bash
+git clone https://github.com/AbuBakerAttique/squadron-goodfellow.git
+cd squadron-goodfellow
+```
+
+Open the folder in VS Code and use the integrated terminal or notebook environment.
+
+### 3) Run the starter script
+
+From the repository root:
+
+```bash
+python mission-01/04_dialogic_engine_starter.py --mode socratic --provider mock
+```
+
+Run the Galilean debate mode:
+
+```bash
+python mission-01/04_dialogic_engine_starter.py --mode galilean --debate-providers mock,mock,mock
+```
+
+Run both modes together:
+
+```bash
+python mission-01/04_dialogic_engine_starter.py --mode both --provider mock
+```
+
+### 4) Open the starter notebook
+
+Open the notebook in VS Code:
+
+```text
+mission-01/ps01_starter.ipynb
+```
+
+If the notebook is opened from inside the `mission-01` folder, it will automatically resolve the repo root using the path fix in the notebook cells.
+
+### 5) LLM API setup
+
+If you want to use real providers instead of the mock provider, set environment variables before running the script:
+
+```bash
+set GEMINI_API_KEY=your_key_here
+set OPENAI_API_KEY=your_key_here
+set ANTHROPIC_API_KEY=your_key_here
+```
+
+Or in PowerShell:
+
+```powershell
+$env:GEMINI_API_KEY="your_key_here"
+$env:OPENAI_API_KEY="your_key_here"
+$env:ANTHROPIC_API_KEY="your_key_here"
+```
+
+### 6) Example commands
+
+```bash
+python mission-01/04_dialogic_engine_starter.py --mode socratic --provider gemini
+python mission-01/04_dialogic_engine_starter.py --mode galilean --debate-providers gemini,openai,anthropic
+python mission-01/04_dialogic_engine_starter.py --mode both --provider mock --max-refinements 5
+```
 
 **Security:** API credentials must not be committed to the public repository.
 
