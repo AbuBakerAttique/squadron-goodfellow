@@ -191,6 +191,6 @@ The squadron must complete all deliverables and obtain all four station sign-off
 Each officer ticks their own box once they have reviewed every deliverable and agree that the squadron's submission is ready.
 
 - [X] **data** — Historical Archivist — Abubaker Attique
-- [ ] **protocol** — Protocol & Interface Specialist — Fatima Siddiqa
+- [X] **protocol** — Protocol & Interface Specialist — Fatima Siddiqa
 - [ ] **security** — Security & Ethical Navigator — Syeda Manahil Javed
 - [ ] **architect** — Core & Lead Architect — Abdul Jalil Memon
