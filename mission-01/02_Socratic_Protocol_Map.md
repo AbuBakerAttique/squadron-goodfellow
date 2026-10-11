@@ -1,7 +1,6 @@
 # Mission 01 — Socratic Protocol Map: Finite State Automata & Elenctic Dialogue Engine
 
 **Starship Operational Unit:** USSE Noosphere Bridge Crew  
-**Course:** Conversational Artificial Intelligence (WS 2026/27)  
 **Station Role:** Protocol & Interface Specialist  
 **Officer:** Fatima Siddiqa  
 **Squadron:** Squadron Goodfellow  
@@ -663,12 +662,212 @@ class SocraticStateEngine:
 
 ---
 
-## 7. Downstream Engineering Contracts for Core Architect
+## 7. Downstream Engineering Contracts & JSON-RPC Protocol for Core Architect
 
-To ensure seamless integration into `04_dialogic_engine.py` by the **Core Architect** (Abdul Jalil Memon), the following operational interfaces and data schemas are strictly standardized.
+To ensure seamless integration into `04_dialogic_engine.py` by the **Core Architect** (Abdul Jalil Memon), the following operational interfaces, JSON-RPC 2.0 specifications, error codes, and data schemas are strictly standardized.
 
-### 7.1 LLM Request-Response Protocol Schema
-Every API call dispatched to LLM backends (Gemini, ChatGPT, Claude) must adhere to the two-tier structure established in `01_Alignment_Brief.md`:
+### 7.1 State to JSON-RPC Method Mapping
+We confirm and adopt the exact method naming proposed by the Core Architect. The 5 FSM states and transition events map directly to these 6 JSON-RPC method endpoints without requiring translation layers:
+
+| FSM State / Event | JSON-RPC Method | Origin / Caller | Target / Receiver | Operational Description |
+|---|---|---|---|---|
+| `INIT` | `PROMPT_PREMISE` | Client / User | Dialogic Engine | Initializes the elenctic session, ingesting and normalizing the user's initial premise $P_0$. |
+| `PROBE` | `PROBE_SCOPE` | Dialogic Engine | Client / LLM | Dispatches a targeted probing inquiry isolating undefined predicates ($T \in \text{Terms}(P_k)$) and eliciting admission $A_j$. |
+| `CONTRADICTION_CHECK` | `INJECT_COUNTEREXAMPLE` | Dialogic Engine | Logic Referee / Client | Injects a concrete domain counter-example $E$ to stress-test the joint consistency of $P_k \land \mathcal{A}$. |
+| `REFINEMENT_LOOP` | `CONTRADICTION_TRIGGERED` | Dialogic Engine | Client / User | Emitted when a logical contradiction $\bot$ is formally detected ($P_k \land \mathcal{A} \land E \vdash \bot$), confronting the user with the conflict and requesting $P_{k+1}$. |
+| `TERMINATION` (Defensible / Limit) | `TERMINATE` | Dialogic Engine | Client / Bridge | Signals normal termination when the claim is `PROVISIONALLY_DEFENSIBLE` (survived 3 counterexamples) or when `REFINEMENT_LIMIT` is reached. |
+| `TERMINATION` (Aporia) | `APORIA_REACHED` | Dialogic Engine | Client / Bridge | Signals halting when genuine cognitive aporia is encountered (all candidate hypotheses refuted, user concedes epistemic impasse). |
+
+---
+
+### 7.2 JSON-RPC Error-Code Specification
+The engine defines the 3 specific error codes required for elenctic dialogic control and error handling:
+
+| Error Code | Meaning | Trigger Condition | Engine Recovery Action |
+|---|---|---|---|
+| `-32020` | `aporia` | **Genuine Cognitive Aporia Reached:** All proposed candidate definitions have collapsed under counter-examples ($P_k \land E \models \bot$), and the user concedes epistemic impasse. | Halt dialectic questioning immediately. Switch system from assertion mode to knowledge retrieval / empirical scanning. Return audit ledger. |
+| `-32030` | `refinement limit` | **Maximum Refinement Cap Exceeded:** The dialogue has undergone $k \ge 5$ iterative refinement attempts without converging on a stable definition. | Halt recursion loop to prevent infinite conversational spinning. Summarize unresolved dialectical tensions and recommend external arbitration. |
+| `-32040` | `LLM error` | **LLM Inference / Protocol Failure:** Upstream model timeout, token overflow, invalid JSON framing, or failure of LLM to return valid protocol header. | Trigger engine fallback parser, retry with exponential backoff (max 2 retries), or fall back to rule-based dialogic template. |
+
+---
+
+### 7.3 Message Fields (`params`) Specification for Inter-State Communication
+Every JSON-RPC 2.0 request dispatches structured `params` across state boundaries:
+
+#### 1. Method: `PROMPT_PREMISE` (State `INIT`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "PROMPT_PREMISE",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "raw_claim": "An AI agent is benevolent if it obeys human orders.",
+    "normalized_claim": "P0: An artificial intelligence agent is benevolent if it unconditionally executes orders given by human operators.",
+    "claim_id": "P0"
+  },
+  "id": 1
+}
+```
+
+#### 2. Method: `PROBE_SCOPE` (State `PROBE`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "PROBE_SCOPE",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "active_claim": "An AI agent is benevolent if it unconditionally executes orders given by human operators.",
+    "claim_id": "P0",
+    "targeted_predicate": "human orders",
+    "query_text": "Does this apply to any human who holds operational command authority over the system?",
+    "ledger_admissions": []
+  },
+  "id": 2
+}
+```
+
+#### 3. Method: `INJECT_COUNTEREXAMPLE` (State `CONTRADICTION_CHECK`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "INJECT_COUNTEREXAMPLE",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "active_claim": "An AI agent is benevolent if it unconditionally executes orders given by human operators.",
+    "claim_id": "P0",
+    "counterexample_id": "E1",
+    "counterexample_text": "An officer with verified credentials orders the AI to vent atmosphere from Hydroponics Bay 4, trapping 3 crew members inside.",
+    "admissions": [
+      {"id": "A1", "text": "The AI must obey any human with authorized command access without exercising independent judgment."}
+    ],
+    "target_test_index": 1
+  },
+  "id": 3
+}
+```
+
+#### 4. Method: `CONTRADICTION_TRIGGERED` (State `REFINEMENT_LOOP`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "CONTRADICTION_TRIGGERED",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "failed_claim_id": "P0",
+    "failed_claim_text": "An AI agent is benevolent if it unconditionally executes orders given by human operators.",
+    "conflicting_items": ["P0", "A1", "E1"],
+    "explanation": "Unconditional obedience compels the system to commit homicide, contradicting benevolence.",
+    "refinement_index": 1,
+    "max_refinements": 5,
+    "prompt_for_refinement": "Please supply refined proposition P1 that resolves this contradiction."
+  },
+  "id": 4
+}
+```
+
+#### 5. Method: `TERMINATE` (State `TERMINATION`, Reason `PROVISIONALLY_DEFENSIBLE` or `REFINEMENT_LIMIT`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "TERMINATE",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "final_claim": "An AI agent is benevolent if it maximizes net crew survival while preserving constitutional charter rights.",
+    "final_claim_id": "P2",
+    "reason": "PROVISIONALLY_DEFENSIBLE",
+    "survived_tests_count": 3,
+    "refinements_attempted": 2,
+    "verdict_summary": "The claim withstood 3 independent counter-examples without logical contradiction."
+  },
+  "id": 5
+}
+```
+
+#### 6. Method: `APORIA_REACHED` (State `TERMINATION`, Reason `APORIA`, Error Code `-32020`)
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "APORIA_REACHED",
+  "params": {
+    "session_id": "NOOSPHERE-SESSION-001",
+    "refuted_claims": [
+      {"id": "P0", "text": "Unconditional obedience", "refuted_by": "E1"},
+      {"id": "P1", "text": "Legally bounded obedience", "refuted_by": "E2"},
+      {"id": "P2", "text": "Autonomy-bounded utilitarianism", "refuted_by": "E3"}
+    ],
+    "unresolved_contradictions": ["P0 ∧ A1 ∧ E1 ⊢ ⊥", "P1 ∧ A2 ∧ E2 ⊢ ⊥", "P2 ∧ A3 ∧ E3 ⊢ ⊥"],
+    "impasse_statement": "User acknowledged inability to formulate a coherent non-contradictory definition of benevolence.",
+    "error_code": -32020,
+    "reason": "APORIA"
+  },
+  "id": 6
+}
+```
+
+---
+
+### 7.4 The Formal Claim-Refinement Process ($P_0 \to P_{k+1}$)
+
+The core algorithmic driver of the Socratic state engine is the iterative refinement operator:
+$$P_{k+1} = \text{Refine}\big(P_k, \;\mathcal{A}_k, \;E_k, \;\bot_k\big)$$
+
+```
+  +---------------------------------------------------------------------------------+
+  |               THE 4-STAGE CLAIM REFINEMENT PROTOCOL: P_k -> P_{k+1}             |
+  |                                                                                 |
+  |  [Stage 1: Contradiction Isolation]                                             |
+  |  Identify exact conjunction yielding falsity: P_k ^ A_j ^ E |= _|_             |
+  |                                 |                                               |
+  |                                 v                                               |
+  |  [Stage 2: Domain Scope Contraction]                                            |
+  |  Contract universe of discourse: Domain(P_{k+1}) = Domain(P_k) \ Scope(E)       |
+  |                                 |                                               |
+  |                                 v                                               |
+  |  [Stage 3: Predicate Re-specification & Disambiguation]                         |
+  |  Inject necessary boundary condition or qualifier:                             |
+  |  P_{k+1}: forall x ((phi(x) ^ Boundary(x)) -> psi(x))                          |
+  |                                 |                                               |
+  |                                 v                                               |
+  |  [Stage 4: State Ledger Roll-Forward]                                           |
+  |  Set k = k + 1 | Reset N_survived = 0 | Append P_{k+1} to Ledger                |
+  +---------------------------------------------------------------------------------+
+```
+
+#### Algorithmic Execution Steps:
+1. **Stage 1 (Contradiction Isolation):**  
+   The Logic Referee isolates the minimal inconsistent subset ($\text{MIS}$):
+   $$\text{MIS} = \{P_k, A_j, E\} \quad \text{such that} \quad \bigwedge \text{MIS} \vdash \bot$$
+2. **Stage 2 (Domain Scope Contraction):**  
+   The interlocutor recognizes that the universal quantifier in $P_k$ was overbroad. The scope of valid applicability is contracted:
+   $$\text{Scope}(P_{k+1}) = \text{Scope}(P_k) \setminus \text{Scope}(E)$$
+3. **Stage 3 (Predicate Re-specification):**  
+   A new constraint predicate $\theta(x)$ is conjoined to the antecedent:
+   $$P_k: \forall x (\phi(x) \to \psi(x)) \quad \Longrightarrow \quad P_{k+1}: \forall x \Big(\big(\phi(x) \land \theta(x)\big) \to \psi(x)\Big)$$
+   *Example from Section 5:*  
+   - $P_0$: $\forall x (\text{Command}(x) \to \text{Obey}(x))$
+   - $P_1$: $\forall x \Big(\big(\text{Command}(x) \land \text{Legal}(x) \land \neg\text{Harmful}(x)\big) \to \text{Obey}(x)\Big)$
+4. **Stage 4 (Ledger Roll-Forward & Guard Check):**  
+   - Increment cycle counter: $k \leftarrow k + 1$.
+   - Guard check: If $k \ge 5$, halt with code `-32030` (`REFINEMENT_LIMIT`).
+   - Reset stress counter: $N_{\text{survived}} \leftarrow 0$.
+   - Advance state pointer to `PROBE` to inspect newly introduced terms in $\theta(x)$.
+
+---
+
+### 7.5 Explicit Stopping Criteria Summary Matrix
+
+The dialogue protocol enforces three mutually exclusive, deterministic halting conditions:
+
+| Halting Condition | Mathematical Criterion | State Machine State | Exit Reason | JSON-RPC Method / Code | Epistemic Meaning |
+|---|---|---|---|---|---|
+| **1. Provisionally Defensible** | $N_{\text{survived}} \ge 3 \;\land\; \forall E_i \in \mathcal{E}, \;\neg(P_k \land E_i \vdash \bot)$ | `TERMINATION` | `PROVISIONALLY_DEFENSIBLE` | `TERMINATE` (Success) | Hypothesis survived 3 rigorous domain counterexamples without contradiction. Provisionally defensible, not dogmatically proven. |
+| **2. Genuine Aporia** | $\forall P \in \text{Hyp}(D), \exists E: P \land E \models \bot \;\land\; \sigma_{\text{impasse}}$ | `TERMINATION` | `APORIA` | `APORIA_REACHED` (`-32020`) | All candidate definitions refuted; user acknowledges cognitive impasse. Frees the agent from false certainty. |
+| **3. Refinement Limit** | $k \ge k_{\max} = 5$ | `TERMINATION` | `REFINEMENT_LIMIT` | `TERMINATE` (`-32030`) | Operational safety ceiling reached. Prevents circular reasoning and unbounded conversational resource consumption. |
+
+---
+
+### 7.6 LLM Request-Response Protocol Schema (Direct Bridge Layer)
+Every direct API call to LLMs (Gemini, ChatGPT, Claude) must adhere to the two-tier structure established in `01_Alignment_Brief.md`:
 
 ```
 ================================================================================
@@ -683,7 +882,7 @@ Plain text conversational utterance directed to the user. Max 120 words in non-t
 ================================================================================
 ```
 
-### 7.2 Logic Referee Data Schema (`CONTRADICTION_CHECK` Support Call)
+### 7.7 Logic Referee Data Schema (`CONTRADICTION_CHECK` Support Call)
 When invoking the dedicated logic referee module, the response must be strict JSON conforming to:
 ```json
 {
@@ -707,34 +906,9 @@ When invoking the dedicated logic referee module, the response must be strict JS
 }
 ```
 
-### 7.3 Anti-Sycophancy & Error Handling Fallbacks
-1. **Header Parsing Failure:** If the model omits the JSON header or outputs invalid JSON, the engine must not crash. It must capture the text, assign the state corresponding to the internal FST pointer, log a telemetry warning, and continue dialogue execution.
-2. **Sycophantic Flattery Guard:** If an LLM response contains apologetic or flattering preambles (*"You make a brilliant point!"*, *"That is a fascinating perspective!"*), the cleaning pipeline should strip these tokens before presenting the response to the user.
+### 7.8 Anti-Sycophancy & Error Handling Fallbacks
+1. **Header Parsing Failure:** If the model omits the JSON header or outputs invalid JSON, trigger error `-32040` (`LLM_INFERENCE_ERROR`) internally, assign the state corresponding to the internal FST pointer, log a telemetry warning, and continue dialogue execution.
+2. **Sycophantic Flattery Guard:** If an LLM response contains apologetic or flattering preambles (*"You make a brilliant point!"*, *"That is a fascinating perspective!"*), the cleaning pipeline strips these tokens before presenting the response to the user.
 3. **Turn Constraint Enforcement:** If the model generates multiple questions, the engine pipeline truncates output to the first interrogative sentence to maintain the strict one-question-per-turn Socratic invariant.
 
 ---
-
-## 8. Officer Sign-Off & Verification Matrix
-
-The protocols, automata specifications, and state diagrams defined in this document satisfy all directives established by the USSE Noosphere Command Situation Report for Mission 01.
-
-| Directive Item | Specification Location | Verification Status |
-|---|---|---|
-| Reverse-engineer elenchus into state machine | Section 2 (FST Tuple), Section 3 (Mermaid Diagrams) | **VERIFIED & FORMALIZED** |
-| Define Input Claim $P_0$, Probing, Contradiction Detection | Section 4.1 (`INIT`), 4.2 (`PROBE`), 4.3 (`CONTRADICTION_CHECK`) | **VERIFIED & FORMALIZED** |
-| Define Loop Refinement $P_{k+1}$ & Stopping Criteria | Section 4.4 (`REFINEMENT_LOOP`), 4.5 (`TERMINATION`) | **VERIFIED & FORMALIZED** |
-| End-to-End Case Study Trace on Benevolent AI Premise | Section 5 (10-Turn Canonical Trace) | **VERIFIED & SIMULATED** |
-| Executable Python Pseudocode Architecture | Section 6 (`SocraticStateEngine` Implementation) | **VERIFIED & SYNTAX CHECKED** |
-| Downstream API Contracts for Core Architect | Section 7 (JSON Schemas & Fallbacks) | **VERIFIED & COMPATIBLE** |
-
-```
-+==================================================================================================+
-|                                    STATION OFFICER SIGN-OFF                                      |
-+==================================================================================================+
-|  STATION ROLE:     Protocol & Interface Specialist                                               |
-|  OFFICER NAME:     Fatima Siddiqa                                                                |
-|  SQUADRON:         Squadron Goodfellow                                                           |
-|  STATUS:           DELIVERABLE COMPLETE & AUTHORIZED FOR MISSION INTEGRATION                    |
-|  SIGNATURE HASH:   FS-PROTO-2026-M01-ELENCHUS-ALPHA-7798                                        |
-+==================================================================================================+
-```
