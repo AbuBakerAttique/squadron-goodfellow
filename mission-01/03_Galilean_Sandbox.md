@@ -132,22 +132,37 @@ Debate between AI agents has been proposed as a way to make AI judgments easier 
 | Mediator bias | Sagredo adopts one agent's framing or judges by tone. | Sagredo must assess evidence independently. |
 
 
-### 4.2 Single-Agent vs. Multi-Agent Comparison
 
-**Evaluation status: awaiting the Core Architect’s real LLM execution transcript.** The table below defines precisely what must be measured. A result is not claimed until it can be checked against a saved, non-mock transcript. This avoids presenting invented measurements as experimental findings.
+## 4.2 Single-Agent vs. Multi-Agent Comparison
+
+**Evaluation status:** Completed preliminary offline mock test on 12 October 2026. The engine ran two debate rounds and compared the three-agent debate with a single-agent baseline.
 
 | Measure | Single-agent baseline | Three-agent debate | Scoring rule |
 |---|---|---|---|
-| Distinct considerations raised | Not yet measured | Not yet measured | Count distinct, non-repeated ethical or practical considerations |
-| Counterarguments to its own recommendation | Not yet measured | Not yet measured | Count substantive objections addressed, not rhetorical disclaimers |
-| Unsupported factual claims | Not yet measured | Not yet measured | Count checkable factual assertions lacking support in the output |
-| Uncertainty explicitly acknowledged | Not yet measured | Not yet measured | Yes only if a material uncertainty is explicitly identified |
-| Third option (staged access) considered | Not yet measured | Not yet measured | Yes only if the option is substantively assessed |
-| Unresolved disagreement preserved | Not yet measured | Not yet measured | Yes if the final answer identifies an actual unsettled dispute |
+| Distinct considerations raised | Transparency, access, misuse | Independent auditing, reproducibility, broad access, concentration of power, irreversible release, misuse | Identify distinct ethical or practical considerations |
+| Counterarguments to its own recommendation | Mentions benefits and risks without detailed rebuttal | Salviati and Simplicio present opposing arguments | Check whether substantive objections are raised |
+| Unsupported factual claims | No evidence or sources provided | No evidence or sources provided | Identify factual claims lacking supporting evidence |
+| Uncertainty explicitly acknowledged | Not explicitly addressed | Competing risks identified, but uncertainty not quantified | Check for explicit discussion of uncertainty |
+| Third option (staged access) considered | Suggests a balanced approach without specifics | Sagredo explicitly recommends staged release after evaluation | Check whether a third option is considered |
+| Unresolved disagreement preserved | No specific disagreement identified | Sagredo identifies disagreement over who sets risk thresholds | Check whether unresolved disputes are preserved |
 
-**Required run metadata:** Provider/model: awaiting execution; date/time: awaiting execution; number of debate rounds: 2 planned; transcript path: `logs/` (to be supplied by Core Architect). Both conditions must use the same dilemma, and the baseline should be generated without seeing the multi-agent debate.
+**Execution metadata:**
 
-**Interpretation rule:** More arguments do not necessarily mean better reasoning. A useful improvement requires relevant objections, supported claims, acknowledgment of uncertainty, and independent mediation. The audit must not claim that debate *prevented* bias merely because the prompts instruct agents to avoid it.
+- Provider: Mock (offline simulation)
+- Date: 12 October 2026
+- Debate rounds: 2
+- Topic: Should frontier foundation models be open-sourced?
+- Salviati calls: 2
+- Simplicio calls: 2
+- Sagredo calls: 4
+- Single-agent calls: 1
+- Three-agent token usage: 1,892 estimated tokens
+- Single-agent token usage: 58 estimated tokens
+- Token cost ratio: approximately 32.6 times
+- Execution log: `logs/run_20261012_075237.jsonl`
+
+**Limitation:** The mock uses predefined responses. It verifies the debate workflow but cannot establish that real LLMs reason independently or resist sycophancy.
+
 
 ### 4.3 Audit Findings — Design Review and Evidence Required
 
