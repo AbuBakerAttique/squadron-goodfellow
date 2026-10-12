@@ -1,7 +1,10 @@
 # Mission 01 — Historical Alignment Brief
 
-**Course:** Conversational Artificial Intelligence (WS 2026/27)  
+**Starship Operational Unit:** USSE Noosphere Bridge Crew  
+**Station Role:** Historical Archivist  
+**Officer:** Abubaker Attique  
 **Squadron:** Squadron Goodfellow  
+**Deliverable File:** `01_Alignment_Brief.md`  
 
 ---
 
