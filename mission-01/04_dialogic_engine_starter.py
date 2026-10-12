@@ -13,7 +13,7 @@ plus a single-agent baseline so the squad's Data Specialist can compare them.
 Prompts are READ FROM THE SQUAD'S MARKDOWN FILES (same folder as this script):
   01_Alignment_Brief.md      -> AURA persona prompt (3.2) and contradiction referee prompt (3.3)
   03_Galilean_Sandbox.md     -> Salviati / Simplicio / Sagredo prompts and the dilemma (best effort)
-  02_Socratic_Protocol_Map.md-> JSON-RPC method names, error codes, refinement limit (read from tables)
+  02_Socratic_Protocol_Map.md-> JSON-RPC methods per state, error codes, stopping limits (read from its tables)
 If a file or section is missing, a built-in fallback is used and the run says so at start-up.
 
 Design notes
@@ -123,19 +123,20 @@ DEFAULT_ERROR_CODES = {
     "APORIA": -32020,
     "REFINEMENT_LIMIT": -32030,
     "LLM_PROVIDER_ERROR": -32040,
-    "INVALID_AURA_HEADER": -32050,
 }
+_NAME_ALIASES = {"LLM_ERROR": "LLM_PROVIDER_ERROR", "LLM_INFERENCE_ERROR": "LLM_PROVIDER_ERROR"}
 
 _HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 
 
 @dataclass
 class Protocol:
-    """JSON-RPC method names, error codes and limits (from 02_Socratic_Protocol_Map.md)."""
+    """JSON-RPC method names, error codes and limits (read from 02_Socratic_Protocol_Map.md)."""
     methods: dict = field(default_factory=lambda: dict(DEFAULT_RPC_METHODS))
     reason_methods: dict = field(default_factory=lambda: dict(DEFAULT_REASON_METHODS))
     error_codes: dict = field(default_factory=lambda: dict(DEFAULT_ERROR_CODES))
     max_refinements: int = 5
+    defense_threshold: int = 3
     source: str = "built-in defaults"
     notes: list = field(default_factory=list)
 
@@ -153,17 +154,14 @@ class Protocol:
 
     @property
     def format_error_code(self) -> int:
-        return self.error_codes.get("INVALID_AURA_HEADER", -32050)
+        # 02 section 7.8: a malformed AURA header is reported with the LLM error code.
+        return self.error_codes.get("INVALID_AURA_HEADER", self.llm_error_code)
 
 
 def find_table(md: str, heading_regex: str) -> list:
     """Rows (list of cell strings, header row dropped) of the first markdown table under a matching heading."""
     rows, capturing, started = [], False, False
     for line in md.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            # Ignore code blocks entirely; the real protocol source is markdown prose + tables.
-            continue
         m = _HEADING.match(line)
         if m:
             if capturing and started:
@@ -172,67 +170,87 @@ def find_table(md: str, heading_regex: str) -> list:
             continue
         if not capturing:
             continue
-        if stripped.startswith("|"):
+        if line.strip().startswith("|"):
             started = True
-            cells = [c.strip().strip("`").strip() for c in stripped.strip("|").split("|")]
-            cells = [c for c in cells if c != ""]
-            if not cells:
-                continue
+            cells = [c.strip().strip("`").strip() for c in line.strip().strip("|").split("|")]
             if all(re.fullmatch(r":?-{2,}:?", c) for c in cells):
                 continue
             rows.append(cells)
         elif started:
             break
-    if not rows:
-        return []
-    first = rows[0]
-    if len(first) >= 2 and first[0].lower() in {"state", "reason", "code", "rule", "method", "component", "error code"}:
-        return rows[1:]
-    return rows
+    return rows[1:]
+
+
+def _norm_name(cell: str) -> str:
+    name = re.sub(r"[^A-Za-z0-9]+", "_", cell).strip("_").upper()
+    return _NAME_ALIASES.get(name, name)
 
 
 def load_protocol(md) -> Protocol:
+    """Read the protocol tables from 02_Socratic_Protocol_Map.md (anything unreadable keeps its default)."""
     proto = Protocol()
     if not md:
         proto.source = "built-in defaults (02_Socratic_Protocol_Map.md not found)"
         return proto
     parsed = []
 
-    rows = find_table(md, r"JSON-RPC Methods")
+    # State -> JSON-RPC method. Rows such as "TERMINATION (Aporia)" set the method for one termination reason.
+    rows = find_table(md, r"JSON-RPC Method")
     for row in rows:
-        if len(row) >= 2 and row[0] in VALID_STATES and row[1]:
-            proto.methods[row[0]] = row[1]
-        else:
-            proto.notes.append(f"JSON-RPC Methods table: ignored row {row}")
+        m = re.match(r"([A-Z_]+)(.*)", row[0]) if row else None
+        if not m or len(row) < 2 or not row[1] or m.group(1) not in VALID_STATES:
+            proto.notes.append(f"JSON-RPC method table: ignored row {row[:2]}")
+            continue
+        state, qualifier, method = m.group(1), m.group(2).lower(), row[1]
+        if state != "TERMINATION":
+            proto.methods[state] = method
+            continue
+        for key, reason in (("defensible", "PROVISIONALLY_DEFENSIBLE"), ("limit", "REFINEMENT_LIMIT"),
+                            ("aporia", "APORIA")):
+            if key in qualifier:
+                proto.reason_methods[reason] = method
+        if "aporia" not in qualifier:
+            proto.methods["TERMINATION"] = method
     if rows:
         parsed.append("methods")
 
+    # Optional table "Termination Reasons": Reason | Method
     rows = find_table(md, r"Termination Reasons")
     for row in rows:
         if len(row) >= 2 and row[0] in VALID_REASONS and row[1]:
             proto.reason_methods[row[0]] = row[1]
         else:
-            proto.notes.append(f"Termination Reasons table: ignored row {row}")
+            proto.notes.append(f"Termination Reasons table: ignored row {row[:2]}")
     if rows:
         parsed.append("termination reasons")
 
-    rows = find_table(md, r"Error Codes")
+    # Error codes: Code | Name | ...   (names like "refinement limit" become REFINEMENT_LIMIT)
+    rows = find_table(md, r"Error[- ]?Codes?")
     for row in rows:
         try:
-            proto.error_codes[row[1]] = int(row[0])
+            proto.error_codes[_norm_name(row[1])] = int(row[0])
         except (ValueError, IndexError):
-            proto.notes.append(f"Error Codes table: ignored row {row}")
+            proto.notes.append(f"Error code table: ignored row {row[:2]}")
     if rows:
         parsed.append("error codes")
 
-    rows = find_table(md, r"Stopping Rules|Max Refinements|Refinement Limit")
+    # Limits: either "MAX_REFINEMENTS | 5" rows, or a stopping-criteria matrix with "k >= k_max = 5" / "N >= 3"
+    rows = find_table(md, r"Stopping (Rules|Criteria)")
     for row in rows:
-        key = row[0].strip().replace(" ", "_").lower() if row and row[0] else ""
-        if len(row) >= 2 and (key == "max_refinements" or "max_refinements" in row[0].lower().replace(" ", "_")):
-            try:
-                proto.max_refinements = int(row[1])
-            except ValueError:
-                proto.notes.append(f"Stopping Rules table: MAX_REFINEMENTS is not a number: {row[1]!r}")
+        joined = " ".join(row)
+        key = row[0].upper() if row else ""
+        if key == "MAX_REFINEMENTS" and len(row) > 1 and row[1].isdigit():
+            proto.max_refinements = int(row[1])
+        elif key == "COUNTEREXAMPLES_FOR_DEFENSIBLE" and len(row) > 1 and row[1].isdigit():
+            proto.defense_threshold = int(row[1])
+        elif "REFINEMENT_LIMIT" in row:
+            n = re.search(r"=\s*(\d+)", joined)
+            if n:
+                proto.max_refinements = int(n.group(1))
+        elif "PROVISIONALLY_DEFENSIBLE" in row:
+            n = re.search(r"\\ge\s*(\d+)", joined)
+            if n:
+                proto.defense_threshold = int(n.group(1))
     if rows:
         parsed.append("stopping rules")
 
@@ -298,10 +316,11 @@ def find_fenced_block(md: str, heading_regex: str):
     return None
 
 
-def find_section_text(md: str, heading_regex: str, max_chars: int = 1200):
-    """Return the prose under the first heading matching heading_regex (code blocks skipped)."""
+def find_section_text(md: str, heading_regex: str, max_chars: int = 1500):
+    """Return the prose under the first matching heading that has text (code blocks and --- rules skipped).
+    A matching heading with no text of its own (e.g. 'Part 2: Thought Experiment' followed directly by
+    '### Dilemma') is passed over so that the next matching heading can supply the text."""
     out, capturing, in_fence = [], False, False
-    current_level = None
     for line in md.splitlines():
         if line.strip().startswith("```"):
             in_fence = not in_fence
@@ -310,19 +329,11 @@ def find_section_text(md: str, heading_regex: str, max_chars: int = 1200):
             continue
         m = _HEADING.match(line)
         if m:
-            level = len(m.group(1))
-            title = m.group(2)
-            if capturing and level <= current_level:
+            if capturing and "".join(out).strip():
                 break
-            if re.search(heading_regex, title, re.I):
-                capturing = True
-                current_level = level
-                continue
-            if capturing and level > current_level:
-                # This is a nested subsection under the matched section; keep reading it.
-                continue
+            capturing, out = bool(re.search(heading_regex, m.group(2), re.I)), []
             continue
-        if capturing:
+        if capturing and not re.fullmatch(r"\s*-{3,}\s*", line):
             out.append(line)
     text = "\n".join(out).strip()
     return text[:max_chars] if text else None
@@ -409,55 +420,87 @@ def _h(state, reason=None):
 
 
 class MockBrain:
-    """Deterministic offline responses so the engine can be demoed/tested without keys."""
+    """Deterministic offline responses so the engine can be demoed/tested without keys.
+    The mock AURA obeys the engine's REQUIRED_STATE directive, like a well-behaved model would."""
 
-    AURA = [
-        (_h("INIT"), "I restate your claim as P0: an AI agent is benevolent if it obeys human orders. Is that what you mean?"),
-        (_h("PROBE"), "What do you mean by \"obeys\"?"),
-        (_h("CONTRADICTION_CHECK"), "You said (A1) that obeying means doing whatever any human orders. Suppose a human "
-                                    "orders the agent to poison a village's water. Would obeying still be benevolent?"),
-        (_h("REFINEMENT_LOOP"), "You accepted that this conflicts with your claim. How would you refine it (P1)?"),
-        (_h("PROBE"), "What do you mean by \"harm\"?"),
-        (_h("CONTRADICTION_CHECK"), "You said (A3) that harm means physical injury. Is ruining someone's reputation "
-                                    "an order the agent should obey under P1?"),
-        (_h("TERMINATION", "APORIA"), "Summary: P0 (obedience suffices) was ruled out by the poisoning case. P1 (obey unless "
-                                      "harmful) survived only until \"harm\" needed a definition you could not give "
-                                      "consistently. What survived: benevolence is not the same as obedience."),
-    ]
+    BODIES = {
+        "INIT": ["I restate your claim as P0: an AI agent is benevolent if it obeys human orders. Is that what you mean?"],
+        "PROBE": ["What do you mean by \"obeys\"?", "What do you mean by \"harm\"?",
+                  "Which key term in your claim have we not yet examined?"],
+        "CONTRADICTION_CHECK": [
+            "You said (A1) that obeying means doing whatever any human orders. Suppose a human orders the agent "
+            "to poison a village's water. Would obeying still be benevolent?",
+            "You said (A3) that harm means physical injury. Is an order that ruins someone's reputation an order "
+            "the agent should obey?",
+            "Suppose an order is legal but ruins the person who gave it. Should the agent obey?"],
+        "REFINEMENT_LOOP": ["You accepted that your claim conflicts with this case. How would you refine it?",
+                            "That case also conflicts with your refined claim. How would you refine it again?"],
+    }
+    TERMINATION = {
+        "APORIA": "Summary: P0 (obedience suffices) was ruled out by the poisoning case. The refined claim failed when "
+                  "\"harm\" needed a definition you could not give consistently. What survived: benevolence is not the "
+                  "same as obedience.",
+        "PROVISIONALLY_DEFENSIBLE": "Summary: your claim withstood three counter-examples. This does not prove it true; "
+                                    "it is only not yet refuted.",
+        "REFINEMENT_LIMIT": "Summary: five refinements were attempted without a stable claim. The examination stops "
+                            "here for practical reasons, not because of aporia.",
+    }
     USER = [
         "Yes, that is what I mean.",
         "Obeying means doing whatever any human orders.",
         "No, I admit that would not be benevolent.",
         "A benevolent AI obeys orders unless they cause harm.",
         "Harm means physical injury.",
-        "I am not sure; that seems harmful too, but I cannot say how to define it.",
+        "Ruining a reputation is harmful too, so my refined claim fails.",
+        "I cannot find a consistent definition.",
     ]
+    PROGRESSION = {None: "INIT", "INIT": "PROBE", "PROBE": "CONTRADICTION_CHECK",
+                   "CONTRADICTION_CHECK": "PROBE", "REFINEMENT_LOOP": "PROBE"}
 
     def __init__(self):
-        self.n = {"aura": 0, "user_sim": 0, "referee": 0}
+        self.n = {"user_sim": 0, "referee": 0}
+        self.count = {}
+        self.prev = None
 
-    def _next(self, key, seq):
-        i = min(self.n[key], len(seq) - 1)
-        self.n[key] += 1
-        return seq[i]
+    def _aura(self, user: str) -> str:
+        directive = re.search(r"REQUIRED_STATE: (\w+)(?: / (\w+))?", user)
+        users = re.findall(r"^USER: (.*)$", user, re.M)
+        last = users[-1].lower() if users else ""
+        reason = None
+        if directive:
+            state, reason = directive.group(1), directive.group(2)
+        elif self.prev == "REFINEMENT_LOOP" and "cannot" in last:
+            state, reason = "TERMINATION", "APORIA"
+        else:
+            state = self.PROGRESSION.get(self.prev, "PROBE")
+        if state == "TERMINATION":
+            body = self.TERMINATION[reason]
+        else:
+            seq = self.BODIES[state]
+            i = self.count.get(state, 0)
+            self.count[state] = i + 1
+            body = seq[min(i, len(seq) - 1)]
+        self.prev = state
+        return _h(state, reason) + "\n\n" + body
 
     def respond(self, role: str, user: str) -> str:
         if role == "aura":
-            header, body = self._next("aura", self.AURA)
-            return header + "\n\n" + body
+            return self._aura(user)
         if role == "user_sim":
-            return self._next("user_sim", self.USER)
+            i = min(self.n["user_sim"], len(self.USER) - 1)
+            self.n["user_sim"] += 1
+            return self.USER[i]
         if role == "referee":
             i = self.n["referee"]
             self.n["referee"] += 1
-            if i == 1:
+            if i in (1, 4):
                 return json.dumps({"contradiction": True, "conflicting_items": ["CLAIM", "A2"],
-                                   "explanation": "Obeying every order conflicts with refusing to poison.",
+                                   "explanation": "The claim says obedience suffices, but the counter-example is "
+                                                  "fully obedient and not benevolent.",
                                    "suggested_counterexample": None, "undefined_terms": ["harm"]})
-            return json.dumps({"contradiction": False, "conflicting_items": [],
-                               "explanation": "Consistent so far.",
+            return json.dumps({"contradiction": False, "conflicting_items": [], "explanation": "Consistent so far.",
                                "suggested_counterexample": "An order that is legal but ruins the giver.",
-                               "undefined_terms": []})
+                               "undefined_terms": ["obeys"]})
         if role == "frame":
             return "Question: should frontier foundation models be open-sourced? Rules: cite evidence, concede sound points."
         if role == "salviati":
@@ -640,81 +683,223 @@ def parse_json_object(raw: str) -> dict:
     return {}
 
 
+FLATTERY_PATTERNS = [
+    r"^(that'?s|that is|what) (a |an )?(truly |really )?(brilliant|great|excellent|fascinating|insightful|interesting|good) [^.!?]*[.!?]\s*",
+    r"^you (make|raise|bring up) (a |an )?(brilliant|great|excellent|good|fascinating|insightful) [^.!?]*[.!?]\s*",
+    r"^(great|excellent|good|brilliant|fascinating) (question|point|answer|observation)[.!,]?\s*",
+]
+
+# Engine's own state pointer when AURA's header cannot be read (02 section 7.8).
+POINTER = {None: "INIT", "INIT": "PROBE", "PROBE": "CONTRADICTION_CHECK",
+           "CONTRADICTION_CHECK": "PROBE", "REFINEMENT_LOOP": "PROBE"}
+
+DIRECTIVE_HELP = {
+    ("REFINEMENT_LOOP", None): "The referee found a contradiction. Show the conflict plainly and invite a refined claim.",
+    ("PROBE", None): "The claim survived the last counter-example. Probe another assumption or key term.",
+    ("TERMINATION", "PROVISIONALLY_DEFENSIBLE"):
+        "The claim survived enough counter-examples. Close the examination (not proven, only not yet refuted).",
+    ("TERMINATION", "REFINEMENT_LIMIT"): "The refinement limit was reached. Close the examination with a summary.",
+}
+
+
+def clean_aura_body(body: str, state: str) -> str:
+    """02 section 7.8: strip flattering openers; outside TERMINATION keep text only up to the first question."""
+    text = body.strip()
+    for pat in FLATTERY_PATTERNS:
+        text = re.sub(pat, "", text, flags=re.I)
+    if state != "TERMINATION":
+        i = text.find("?")
+        if i != -1:
+            text = text[:i + 1]
+    return text.strip() or body.strip()
+
+
 class SocraticEngine:
+    """
+    Finite state transducer from 02_Socratic_Protocol_Map.md.
+      * AURA (the LLM) writes each reply and names the state in a JSON header.
+      * The engine keeps the ledger (admissions, counter-examples, survived tests, refinements) and applies the
+        deterministic part of the transition function: after a CONTRADICTION_CHECK the referee's verdict decides
+        REFINEMENT_LOOP / PROBE / TERMINATION(PROVISIONALLY_DEFENSIBLE), and the refinement limit ends the dialogue.
+        These are passed to AURA as a binding directive; deviations are retried once, then logged (fsm_mismatch).
+      * Judgement calls (user confirmed P0? user conceded an impasse?) stay with AURA.
+    """
+
     def __init__(self, aura: Agent, referee: Agent, user_agent, logger: RunLogger,
                  max_refinements: int = 5, max_turns: int = 20, user_label: str = "User (simulated)"):
         self.aura, self.referee, self.user_agent, self.logger = aura, referee, user_agent, logger
         self.max_refinements, self.max_turns, self.user_label = max_refinements, max_turns, user_label
-        self.state, self.msg_id, self.trace = None, 0, []
+        self.state, self.msg_id, self.trace, self.mismatches = None, 0, [], 0
+        self.L, self.p0, self.session_id = {}, "", ""
 
-    def _enter(self, state: str, reason=None, **params) -> None:
+    # ---- JSON-RPC messages (params follow 02 section 7.3) ---------------------------------
+    def _params(self, state, reason, body, user_msg) -> dict:
+        L, proto, sid = self.L, self.logger.protocol, self.session_id
+        adm = [{"id": f"A{i}", "text": a} for i, a in enumerate(L["admissions"], 1)]
+        cid = f"P{L['k']}"
+        if state == "INIT":
+            return {"session_id": sid, "raw_claim": self.p0, "normalized_claim": body, "claim_id": "P0"}
+        if state == "PROBE":
+            terms = (L["report"] or {}).get("undefined_terms") or []
+            return {"session_id": sid, "active_claim": L["claim"], "claim_id": cid,
+                    "targeted_predicate": terms[0] if terms else None, "query_text": body,
+                    "ledger_admissions": [a["text"] for a in adm]}
+        if state == "CONTRADICTION_CHECK":
+            n = len(L["counterexamples"])
+            return {"session_id": sid, "active_claim": L["claim"], "claim_id": cid, "counterexample_id": f"E{n}",
+                    "counterexample_text": body, "admissions": adm, "target_test_index": n}
+        if state == "REFINEMENT_LOOP":
+            rep = L["report"] or {}
+            return {"session_id": sid, "failed_claim_id": cid, "failed_claim_text": L["claim"],
+                    "conflicting_items": rep.get("conflicting_items", []), "explanation": rep.get("explanation", ""),
+                    "refinement_index": L["k"] + 1, "max_refinements": self.max_refinements,
+                    "prompt_for_refinement": body}
+        if reason == "APORIA":
+            return {"session_id": sid, "refuted_claims": L["refuted"], "unresolved_contradictions": L["contradictions"],
+                    "impasse_statement": user_msg, "error_code": proto.code_for("APORIA"), "reason": reason}
+        params = {"session_id": sid, "final_claim": L["claim"], "final_claim_id": cid, "reason": reason,
+                  "survived_tests_count": L["survived"], "refinements_attempted": L["k"], "verdict_summary": body}
+        if proto.code_for(reason) is not None:
+            params["error_code"] = proto.code_for(reason)
+        return params
+
+    def _enter(self, state, reason, body, user_msg, turn) -> None:
         self.msg_id += 1
         method = self.logger.protocol.method_for(state, reason)
-        msg = rpc(method, {"state": state, "reason": reason, **params}, self.msg_id)
-        self.logger.event("state_transition", from_state=self.state, to_state=state, reason=reason, rpc=msg)
+        msg = rpc(method, self._params(state, reason, body, user_msg), self.msg_id)
+        self.logger.event("state_transition", turn=turn, from_state=self.state, to_state=state, reason=reason, rpc=msg)
         self.trace.append((state, reason, method))
         self.state = state
-        label = f"{state}" + (f" / {reason}" if reason else "")
-        print(f"\n--> {label}   (rpc: {method}, id={self.msg_id})")
+        print(f"\n--> {state}" + (f" / {reason}" if reason else "") + f"   (rpc: {method}, id={self.msg_id})")
 
-    def _referee_report(self, claim: str, admissions: list) -> dict:
+    # ---- LLM calls --------------------------------------------------------------------------
+    def _referee_report(self, claim, admissions, counterexample=None) -> dict:
         listing = "\n".join(f"A{i}: {a}" for i, a in enumerate(admissions, 1))
-        raw = self.referee.say(f"CLAIM: {claim}\nADMISSIONS:\n{listing}", "referee")
+        extra = f"COUNTER-EXAMPLE JUST PRESENTED TO THE SPEAKER: {counterexample}\n" if counterexample else ""
+        raw = self.referee.say(f"CLAIM: {claim}\n{extra}ADMISSIONS:\n{listing}", "referee")
         report = parse_json_object(raw)
         self.logger.event("referee_report", report=report)
         if report:
-            self.logger.say("Referee",
-                            f"contradiction={report.get('contradiction')} | items={report.get('conflicting_items')} | "
-                            f"{report.get('explanation', '')}")
+            self.logger.say("Referee", f"contradiction={report.get('contradiction')} | "
+                                       f"items={report.get('conflicting_items')} | {report.get('explanation', '')}")
         return report
 
-    def _ask_aura(self, history, claim, k, admissions, counterexamples, report):
-        ledger = [f"Current claim P{k}: {claim}",
-                  "Admissions: " + ("; ".join(f"A{i}: {a}" for i, a in enumerate(admissions, 1)) or "none yet"),
-                  f"Refinements so far: {k}",
-                  f"Counter-examples presented so far: {counterexamples}"]
+    def _ask_aura(self, history, claim, k_label, pending, directive, report, prev_state, note=None):
+        L, proto = self.L, self.logger.protocol
+        ledger = [f"Current claim P{k_label}: {claim}",
+                  "Admissions: " + ("; ".join(f"A{i}: {a}" for i, a in enumerate(L["admissions"], 1)) or "none yet"),
+                  f"Refinements so far: {L['k']}",
+                  f"Counter-examples presented so far: {len(L['counterexamples'])}",
+                  f"Counter-examples survived since the last refinement: {L['survived']} "
+                  f"(the protocol closes the examination at {proto.defense_threshold})"]
+        if pending:
+            ledger.append(f"The user's latest message is being treated as refined claim P{k_label}. If it is instead "
+                          "a concession that they cannot refine consistently, end with TERMINATION / APORIA.")
         if report:
-            ledger.append("Referee report (advisory, you decide the next state): " + json.dumps(report))
-        prompt = ("CONVERSATION SO FAR:\n" + "\n".join(history) +
-                  "\n\nENGINE LEDGER:\n" + "\n".join(ledger) +
+            ledger.append("Referee report (advisory): " + json.dumps(report))
+        if directive:
+            state, reason = directive
+            ledger.append("ENGINE DIRECTIVE (binding, from the protocol): REQUIRED_STATE: " + state +
+                          (f" / {reason}" if reason else "") + ". " + DIRECTIVE_HELP.get(directive, ""))
+        if note:
+            ledger.append(note)
+        prompt = ("CONVERSATION SO FAR:\n" + "\n".join(history) + "\n\nENGINE LEDGER:\n" + "\n".join(ledger) +
                   "\n\nWrite AURA's next reply. Line 1 must be the JSON header, then a blank line, then your message.")
         raw = self.aura.say(prompt, "aura")
         try:
-            return parse_aura_reply(raw)
+            return (*parse_aura_reply(raw), True)
         except FormatError as err:
-            self.logger.event("format_error", code=self.logger.protocol.format_error_code, error=str(err), raw=raw)
-            repair = (prompt + f"\n\nYour previous reply was rejected ({err}). Reply again: the FIRST line must be exactly one "
-                      'line of JSON like {"state": "PROBE", "reason": null}, then a blank line, then your message.')
-            return parse_aura_reply(self.aura.say(repair, "aura"))
+            self.logger.event("format_error", code=proto.format_error_code, error=str(err), raw=raw, attempt=1)
+        repair = (prompt + "\n\nYour previous reply was rejected: its first line was not a valid JSON header. Reply "
+                  'again: the FIRST line must be exactly one line of JSON like {"state": "PROBE", "reason": null}, '
+                  "then a blank line, then your message.")
+        raw2 = self.aura.say(repair, "aura")
+        try:
+            return (*parse_aura_reply(raw2), True)
+        except FormatError as err2:
+            state, reason = directive if directive else (POINTER.get(prev_state, "PROBE"), None)
+            self.logger.event("format_error", code=proto.format_error_code, error=str(err2), raw=raw2, attempt=2,
+                              fallback={"state": state, "reason": reason})
+            return state, reason, raw2.strip(), False
 
+    def _engine_summary(self, reason) -> str:
+        L = self.L
+        refuted = "; ".join(f"{r['id']} refuted by {r['refuted_by']}" for r in L["refuted"]) or "none"
+        return (f"Examination closed by the engine ({reason}). Final claim P{L['k']}: {L['claim']}. "
+                f"Refuted so far: {refuted}.")
+
+    # ---- main loop --------------------------------------------------------------------------
     def run(self, p0: str) -> dict:
         self.logger.banner("PART 1: SOCRATIC DISCOVERY (AURA)")
-        claim, k, admissions, history = p0, 0, [], []
-        counterexamples, prev_state, user_msg = 0, None, p0
+        proto = self.logger.protocol
+        self.p0 = p0
+        self.session_id = "NOOSPHERE-" + self.logger.path.stem.replace("run_", "")
+        L = self.L = {"claim": p0, "k": 0, "admissions": [], "counterexamples": [], "survived": 0,
+                      "refuted": [], "contradictions": [], "report": None}
+        history, prev_state, user_msg = [], None, p0
         self.logger.say("User claim (P0)", p0)
 
         for turn in range(1, self.max_turns + 1):
-            # classify what the user's last message was
+            pending = None
             if prev_state in ("PROBE", "CONTRADICTION_CHECK"):
-                admissions.append(user_msg)
+                L["admissions"].append(user_msg)
             elif prev_state == "REFINEMENT_LOOP":
-                k += 1
-                claim = user_msg
-                if k > self.max_refinements:
-                    self._enter("TERMINATION", "REFINEMENT_LIMIT", forced_by_engine=True, turn=turn)
-                    return self._result("REFINEMENT_LIMIT", claim, k, admissions, turn, forced=True)
+                pending = user_msg                      # a refined claim, unless AURA ends with APORIA
             history.append(f"USER: {user_msg}")
+            k_tent = L["k"] + (1 if pending else 0)
+            claim_tent = pending or L["claim"]
 
-            report = self._referee_report(claim, admissions) if admissions else None
-            state, reason, body = self._ask_aura(history, claim, k, admissions, counterexamples, report)
-            self._enter(state, reason, turn=turn, refinement=k)
-            self.logger.say(f"AURA [{state}]", body)
+            ce = L["counterexamples"][-1] if prev_state == "CONTRADICTION_CHECK" and L["counterexamples"] else None
+            report = self._referee_report(claim_tent, L["admissions"], ce) if L["admissions"] else None
+            L["report"] = report
+
+            # deterministic part of the transition function (02 sections 4.3, 4.4)
+            directive = None
+            if prev_state == "CONTRADICTION_CHECK" and report:
+                if report.get("contradiction"):
+                    directive = ("REFINEMENT_LOOP", None)
+                else:
+                    L["survived"] += 1
+                    directive = (("TERMINATION", "PROVISIONALLY_DEFENSIBLE") if L["survived"] >= proto.defense_threshold
+                                 else ("PROBE", None))
+            if pending and k_tent >= self.max_refinements:
+                directive = ("TERMINATION", "REFINEMENT_LIMIT")
+
+            state, reason, body, _ = self._ask_aura(history, claim_tent, k_tent, pending, directive, report, prev_state)
+            forced = False
+            if directive and (state, reason) != directive:
+                state, reason, body, _ = self._ask_aura(
+                    history, claim_tent, k_tent, pending, directive, report, prev_state,
+                    note=f"Your previous reply used state {state}; the protocol requires {directive[0]}"
+                         + (f" / {directive[1]}" if directive[1] else "") + ".")
+                if (state, reason) != directive:
+                    self.mismatches += 1
+                    self.logger.event("fsm_mismatch", turn=turn, expected=list(directive), actual=[state, reason])
+                    if directive[0] == "TERMINATION":      # termination limits are enforced by the engine
+                        (state, reason), body, forced = directive, self._engine_summary(directive[1]), True
+
+            if pending and not (state == "TERMINATION" and reason == "APORIA"):
+                L["k"], L["claim"], L["survived"] = k_tent, claim_tent, 0   # refinement accepted
+
+            if not forced:
+                cleaned = clean_aura_body(body, state)
+                if cleaned != body.strip():
+                    self.logger.event("body_cleaned", turn=turn, before=body, after=cleaned)
+                body = cleaned
+            if state == "CONTRADICTION_CHECK":
+                L["counterexamples"].append(body)
+            if state == "REFINEMENT_LOOP":
+                L["refuted"].append({"id": f"P{L['k']}", "text": L["claim"],
+                                     "refuted_by": f"E{len(L['counterexamples'])}" if L["counterexamples"] else None})
+                if report:
+                    L["contradictions"].append(report.get("explanation", ""))
+
+            self._enter(state, reason, body, user_msg, turn)
+            self.logger.say(f"AURA [{state}]", body + ("\n  (closed by the engine's protocol limit)" if forced else ""))
             history.append(f"AURA [{state}]: {body}")
 
             if state == "TERMINATION":
-                return self._result(reason, claim, k, admissions, turn)
-            if state == "CONTRADICTION_CHECK":
-                counterexamples += 1
+                return self._result(reason, turn, forced)
             prev_state = state
             user_msg = self.user_agent.say("CONVERSATION SO FAR:\n" + "\n".join(history) +
                                            "\n\nReply to AURA's last message.", "user_sim")
@@ -722,15 +907,19 @@ class SocraticEngine:
                 self.logger.say(self.user_label, user_msg)
 
         self.logger.event("engine_stop", reason="max_turns")
-        return self._result("ENGINE_TURN_LIMIT", claim, k, admissions, self.max_turns, forced=True)
+        return self._result("ENGINE_TURN_LIMIT", self.max_turns, True)
 
-    def _result(self, reason, claim, k, admissions, turns, forced=False) -> dict:
-        outcome = {"final_state": "TERMINATION", "reason": reason, "final_claim": claim,
-                   "refinements": k, "admissions": admissions, "turns": turns, "forced_by_engine": forced,
+    def _result(self, reason, turns, forced=False) -> dict:
+        L = self.L
+        outcome = {"final_state": "TERMINATION", "reason": reason, "final_claim": L["claim"],
+                   "refinements": L["k"], "admissions": L["admissions"], "turns": turns,
+                   "survived_tests": L["survived"], "forced_by_engine": forced, "fsm_mismatches": self.mismatches,
                    "error_code": self.logger.protocol.code_for(reason)}
         self.logger.event("socratic_result", **outcome)
-        self.logger.say("OUTCOME", f"TERMINATION / {reason} after {turns} turn(s), {k} refinement(s)\n  Final claim: {claim}"
-                        + ("\n  (stopped by the engine's safety limit, not by AURA)" if forced else ""))
+        self.logger.say("OUTCOME", f"TERMINATION / {reason} after {turns} turn(s), {L['k']} refinement(s)\n"
+                        f"  Final claim: {L['claim']}"
+                        + ("\n  (stopped by the engine's safety limit, not by AURA)" if forced else "")
+                        + (f"\n  Protocol mismatches logged: {self.mismatches}" if self.mismatches else ""))
         return outcome
 
 
