@@ -55,17 +55,14 @@ Maximum output: 120 words per response.
 
 ### 1.4 Departures from Galileo's Original Design
 
-| Role | In Galileo's **Dialogue** (1632) | In the AURA sandbox | Why |
 
+| Role | In Galileo's Dialogue (1632) | In the AURA sandbox | Why |
 |---|---|---|---|
-
 | Advocate | Author's voice; outcome fixed in advance | Must state when he would change his mind | Keeps the outcome open (discovery, not persuasion) |
-
 | Skeptic | Partly a straw man | Argues the opposing case at full strength | A weak opponent hides weak assumptions |
-
 | Mediator | Educated observer who favours the advocate | Impartial; judges evidence, not confidence | Prevents the arbiter from becoming an advocate |
-
 | Framing | Omitted the Tychonic system, leaving only two options [1] | Requires a third option (staged access) to be considered | Avoids false binary choices |
+
 
 ---
 
