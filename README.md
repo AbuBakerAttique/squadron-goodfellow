@@ -259,5 +259,5 @@ Each officer ticks their own box once they have reviewed every deliverable and a
 
 - [X] **data** — Historical Archivist — Abubaker Attique
 - [X] **protocol** — Protocol & Interface Specialist — Fatima Siddiqa
-- [ ] **security** — Security & Ethical Navigator — Syeda Manahil Javed
+- [X] **security** — Security & Ethical Navigator — Syeda Manahil Javed
 - [X] **architect** — Core & Lead Architect — Abdul Jalil Memon
