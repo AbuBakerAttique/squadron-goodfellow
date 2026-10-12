@@ -30,7 +30,7 @@ Before transmitting your team's repository link on the course website submission
 
 - [ ] **Historical Archivist (`01_Alignment_Brief.md`):** Dialogic alignment report comparing Socratic Discovery vs. Galilean Persuasion and grounding system prompts.
 - [X] **Protocol Specialist (`02_Socratic_Protocol_Map.md`):** Socratic elenchus state-machine flowchart and pseudocode logic.
-- [ ] **Ethical Navigator (`03_Galilean_Sandbox.md`):** 3-agent Galilean debate sandbox (Salviati, Simplicio, Sagredo) and AI ethics thought experiment.
+- [X] **Ethical Navigator (`03_Galilean_Sandbox.md`):** 3-agent Galilean debate sandbox (Salviati, Simplicio, Sagredo) and AI ethics thought experiment.
 - [ ] **Core Architect (`04_dialogic_engine_starter.py` / `ps01_solution.ipynb`):** Executable Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
 
 ---
