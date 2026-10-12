@@ -160,6 +160,10 @@ def find_table(md: str, heading_regex: str) -> list:
     """Rows (list of cell strings, header row dropped) of the first markdown table under a matching heading."""
     rows, capturing, started = [], False, False
     for line in md.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            # Ignore code blocks entirely; the real protocol source is markdown prose + tables.
+            continue
         m = _HEADING.match(line)
         if m:
             if capturing and started:
@@ -168,15 +172,23 @@ def find_table(md: str, heading_regex: str) -> list:
             continue
         if not capturing:
             continue
-        if line.strip().startswith("|"):
+        if stripped.startswith("|"):
             started = True
-            cells = [c.strip().strip("`").strip() for c in line.strip().strip("|").split("|")]
+            cells = [c.strip().strip("`").strip() for c in stripped.strip("|").split("|")]
+            cells = [c for c in cells if c != ""]
+            if not cells:
+                continue
             if all(re.fullmatch(r":?-{2,}:?", c) for c in cells):
                 continue
             rows.append(cells)
         elif started:
             break
-    return rows[1:]
+    if not rows:
+        return []
+    first = rows[0]
+    if len(first) >= 2 and first[0].lower() in {"state", "reason", "code", "rule", "method", "component", "error code"}:
+        return rows[1:]
+    return rows
 
 
 def load_protocol(md) -> Protocol:
@@ -213,9 +225,10 @@ def load_protocol(md) -> Protocol:
     if rows:
         parsed.append("error codes")
 
-    rows = find_table(md, r"Stopping Rules")
+    rows = find_table(md, r"Stopping Rules|Max Refinements|Refinement Limit")
     for row in rows:
-        if len(row) >= 2 and row[0].upper() == "MAX_REFINEMENTS":
+        key = row[0].strip().replace(" ", "_").lower() if row and row[0] else ""
+        if len(row) >= 2 and (key == "max_refinements" or "max_refinements" in row[0].lower().replace(" ", "_")):
             try:
                 proto.max_refinements = int(row[1])
             except ValueError:
