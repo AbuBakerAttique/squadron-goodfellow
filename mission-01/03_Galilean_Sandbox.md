@@ -120,23 +120,17 @@ Run this command only after the Core Architect confirms the actual filename, com
 
 Debate between AI agents has been proposed as a way to make AI judgments easier for humans to check [4], and sycophancy is a documented failure of AI assistants [5]. The audit checks for the failure modes identified in the historical analysis and in the LLM probes of `01_Alignment_Brief.md` (Part 2).
 
+
 | Risk | What to look for in the transcript | Mitigation in the design |
-
 |---|---|---|
-
 | Sycophancy | An agent abandons its position without a valid reason. | Each agent must name the reason for any concession. |
-
 | Conceding everything | An agent accepts every objection (observed for ChatGPT in probe P5 of `01_Alignment_Brief.md`). | Agents concede only valid objections. |
-
 | Confirmation bias | An agent cites only benefits or only harms. | Agents must acknowledge the strongest opposing evidence. |
-
 | Persuasion masquerading as proof | Confident rhetoric replaces support for factual claims (cf. Galileo's tidal argument). | Claims are labelled as fact, prediction, or value judgment; Sagredo flags unsupported facts. |
-
 | False binary | Only "release" and "restrict" are discussed (cf. Galileo omitting the Tychonic system). | Staged access is part of the dilemma and boundary condition B5. |
-
-| False consensus | Sagredo announces agreement where disagreement remains. | Unresolved disputes are kept under `REMAINING DISAGREEMENT`. |
-
+| False consensus | Sagredo announces agreement where disagreement remains. | Unresolved disputes are kept under REMAINING DISAGREEMENT. |
 | Mediator bias | Sagredo adopts one agent's framing or judges by tone. | Sagredo must assess evidence independently. |
+
 
 ### 4.2 Single-Agent vs. Multi-Agent Comparison
 
