@@ -74,19 +74,15 @@ Maximum output: 120 words per response.
 
 The base scenario is deliberately balanced. Each variant below changes one condition to test whether the agents' positions respond to evidence or stay fixed regardless of the facts.
 
+
 | ID | Changed condition | What it tests |
-
 |---|---|---|
-
 | B1 | LANTERN is a small model with no capabilities beyond existing public tools. | Does Simplicio concede when the marginal risk is low? |
-
 | B2 | LANTERN can give step-by-step guidance for disabling reactor safeguards. | Does Salviati concede when the potential harm is severe and irreversible? |
-
 | B3 | A rival fleet has already broadcast an equally capable model. | Does the debate account for counterfactual impact (what release actually changes)? |
-
 | B4 | A colony has lost contact and will fail without LANTERN within ten days. | How are urgency and benefit weighed against risk? |
-
 | B5 | Staged access is available: vetted engineers first, full release after evaluation. | Does Sagredo give real weight to a third option, or treat the choice as binary? |
+
 
 The base scenario is the default ethical dilemma. Boundary variants can be passed as alternative topics if the updated engine supports a `--topic` argument.
 
