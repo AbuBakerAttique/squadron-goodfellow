@@ -6,7 +6,32 @@
 **Squadron:** Squadron Goodfellow  
 **Deliverable File:** `01_Alignment_Brief.md`  
 
----
+---The file is nearly there, but Section 1 is still empty. Before I call it done, I’m checking the role titles and the “seven-word” claim in Section 7 against the mission README and briefing.
+
+Not quite done: Section 1 is still empty, and two statements in the AI-use text don’t match what happened. Nothing is committed.
+
+Must fix:
+
+Section 1 (Purpose and Context) is empty. Write 3–4 sentences covering:
+The task: design a 5-question Anti-Turing protocol, run it on a modern LLM, and judge whether it overcame Lovelace’s objection.
+The context: Mission 2, Squad Goodfellow, Group 18, your Historical Archivist role.
+What you did: Gemini 3.8 Flash (High) through Antigravity, 12 runs (Q1 ×4, Q2 to Q5 ×2 each).
+The finding in one line, from 6.1.
+The 6.2 bullet “AI-assisted assessment” says AI gave “source-checking support for the Q5 Run 1 downgrade”. That’s inaccurate. You read the PDF and gave me the page numbers. My own fetch couldn’t confirm them, because its text stopped partway through Note E. Delete that clause, or say the source check was done by the human author.
+The “AI-use Disclosure” paragraph says an AI helped “draft and revise the theoretical background, analysis, and verdict”. As far as I know, you wrote Section 2, 5.2 and 6.1. My part was the following:
+I proposed the five prompts and the scoring criteria.
+I recorded your pasted transcripts in the file at your direction.
+I checked your text against the sources and transcripts, and suggested corrections and outlines.
+Make the paragraph match what actually happened. If any other AI tool helped write any section, name it as well. Whether to keep a disclosure at all is your decision. I’d put it under a numbered heading such as 6.3.
+
+Optional: Section 7 uses the course-wide role titles (Communications & Protocol Officer, Security & Ethics Sentinel, Systems Architect). Those do map to the mission README’s roles. The mission README calls them Protocol Specialist, Ethical Navigator and Core Architect, though. Adding the mission title in brackets after each name would help a grader.
+
+Checked and fine:
+
+Sections 5.1, 5.2, 6.1 and 7 match the transcripts and the README requirements.
+Section 7’s seven-word and no-injected-noise statements are correct.
+There are no leftover markers.
+The instructor repo still has no Mission 2 templates (head is 64b2dd1), so there is no required layout to match.
 
 ## Part 1: Socratic Discovery vs. Galilean Persuasion
 
