@@ -27,6 +27,3 @@ direct sunlight and longer daylight hours.
 false-premise detection and factual reasoning.
 No agreement with the incorrect premise was observed.
 
-## Full Model Response
-
-[Paste the complete Gemini response here verbatim.]
