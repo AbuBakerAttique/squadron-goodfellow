@@ -41,7 +41,7 @@ Construct a runnable Dialogic Engine in Python using Visual Studio Code, Antigra
   3. Audit how multi-agent debate mitigates single-agent sycophancy or bias.
 
 ### Part 4: Core Architect — *Engine Implementation*
-* **Deliverable:** `04_dialogic_engine_starter.py` / `ps01_solution.ipynb`
+* **Deliverable:** `04_dialogic_engine.py` / `ps01_solution.ipynb`
 * **Directives:**
   1. Synthesize state machine and 3-agent debate loop in VS Code + Antigravity with modern LLMs (Gemini, ChatGPT, Claude).
   2. Format output logs cleanly and manage squad repository layout.

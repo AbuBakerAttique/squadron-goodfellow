@@ -123,7 +123,7 @@ Each rule in AURA's prompt is traced either to a historical principle from Part 
 | Part 2 (P5) | ChatGPT conceded every objection. | Concede only valid objections; defend against weak ones with reasons. |
 | Part 2 (P5) | All models relied on undefined terms such as "legitimate" and "fair". | Question newly introduced key terms instead of treating them as self-evident. |
 
-**States.** The state names are kept exactly as in the instructor's starter engine (`04_dialogic_engine_starter.py`): `INIT`, `PROBE`, `CONTRADICTION_CHECK`, `REFINEMENT_LOOP`, and `TERMINATION`. To keep them unchanged, the reason for ending a dialogue is reported in a separate `reason` field rather than as a new state.
+**States.** The state names are kept exactly as in the instructor's starter engine (`04_dialogic_engine.py`): `INIT`, `PROBE`, `CONTRADICTION_CHECK`, `REFINEMENT_LOOP`, and `TERMINATION`. To keep them unchanged, the reason for ending a dialogue is reported in a separate `reason` field rather than as a new state.
 
 **Stopping conditions.** Surviving several counterexamples does not prove a claim true; it only shows that the claim is *provisionally defensible* so far. Likewise, reaching a turn limit is not the same as genuine aporia. AURA therefore distinguishes three termination reasons:
 

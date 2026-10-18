@@ -210,7 +210,7 @@ Evaluate staged access and emergency exceptions while independent safety tests p
 
 - **`02_Socratic_Protocol_Map.md`:** The Socratic state machine examines **one** claim held by **one** user. The Galilean sandbox complements it by examining **competing** positions on a question where reasonable people disagree.
 
-- **`04_dialogic_engine_starter.py`:** The engine loads the three persona prompts (Part 1) and the dilemma (Part 2) from this file and run the debate and the single-agent baseline (Part 3), subject to integration testing.
+- **`04_dialogic_engine.py`:** The engine loads the three persona prompts (Part 1) and the dilemma (Part 2) from this file and run the debate and the single-agent baseline (Part 3), subject to integration testing.
 
 ---
 
