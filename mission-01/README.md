@@ -15,11 +15,11 @@ This repository folder contains the starter assets and templates for **Mission 1
 mission-01/
 ├── README.md                              <- Mission overview & squad sign-off status
 ├── ps01_briefing.md                        <- Full mission specification & problem statement
-├── ps01_starter.ipynb                      <- Starter Jupyter notebook for VS Code + Antigravity
-├── 01_Alignment_Brief_template.md          <- Deliverable template (Historical Archivist)
-├── 02_Socratic_Protocol_Map_template.md    <- Deliverable template (Protocol Specialist)
-├── 03_Galilean_Sandbox_template.md         <- Deliverable template (Ethical Navigator)
-└── 04_dialogic_engine_starter.py           <- Starter Python script (Core Architect)
+├── ps01_solution.ipynb                     <- Final Jupyter notebook for VS Code + Antigravity
+├── 01_Alignment_Brief.md                  <- Final deliverable (Historical Archivist)
+├── 02_Socratic_Protocol_Map.md            <- Final deliverable (Protocol Specialist)
+├── 03_Galilean_Sandbox.md                 <- Final deliverable (Ethical Navigator)
+└── 04_dialogic_engine.py                  <- Final Python script (Core Architect)
 ```
 
 ---
@@ -31,7 +31,7 @@ Before transmitting your team's repository link on the course website submission
 - [X] **Historical Archivist (`01_Alignment_Brief.md`):** Dialogic alignment report comparing Socratic Discovery vs. Galilean Persuasion and grounding system prompts.
 - [X] **Protocol Specialist (`02_Socratic_Protocol_Map.md`):** Socratic elenchus state-machine flowchart and pseudocode logic.
 - [X] **Ethical Navigator (`03_Galilean_Sandbox.md`):** 3-agent Galilean debate sandbox (Salviati, Simplicio, Sagredo) and AI ethics thought experiment.
-- [X] **Core Architect (`04_dialogic_engine_starter.py` / `ps01_solution.ipynb`):** Executable Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
+- [X] **Core Architect (`04_dialogic_engine.py` / `ps01_solution.ipynb`):** Executable Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
 
 ---
 

@@ -107,7 +107,6 @@ squadron-goodfellow/
 │   ├── 02_Socratic_Protocol_Map.md
 │   ├── 03_Galilean_Sandbox.md
 │   │
-│   ├── 04_dialogic_engine_starter.py
 │   ├── 04_dialogic_engine.py
 │   ├── ps01_solution.ipynb
 │   │
@@ -180,27 +179,27 @@ Open the folder in VS Code and use the integrated terminal or notebook environme
 From the repository root:
 
 ```bash
-python mission-01/04_dialogic_engine_starter.py --mode socratic --provider mock
+python mission-01/04_dialogic_engine.py --mode socratic --provider mock
 ```
 
 Run the Galilean debate mode:
 
 ```bash
-python mission-01/04_dialogic_engine_starter.py --mode galilean --debate-providers mock,mock,mock
+python mission-01/04_dialogic_engine.py --mode galilean --debate-providers mock,mock,mock
 ```
 
 Run both modes together:
 
 ```bash
-python mission-01/04_dialogic_engine_starter.py --mode both --provider mock
+python mission-01/04_dialogic_engine.py --mode both --provider mock
 ```
 
-### 4) Open the starter notebook
+### 4) Open the notebook
 
 Open the notebook in VS Code:
 
 ```text
-mission-01/ps01_starter.ipynb
+mission-01/ps01_solution.ipynb
 ```
 
 If the notebook is opened from inside the `mission-01` folder, it will automatically resolve the repo root using the path fix in the notebook cells.
@@ -226,9 +225,9 @@ $env:ANTHROPIC_API_KEY="your_key_here"
 ### 6) Example commands
 
 ```bash
-python mission-01/04_dialogic_engine_starter.py --mode socratic --provider gemini
-python mission-01/04_dialogic_engine_starter.py --mode galilean --debate-providers gemini,openai,anthropic
-python mission-01/04_dialogic_engine_starter.py --mode both --provider mock --max-refinements 5
+python mission-01/04_dialogic_engine.py --mode socratic --provider gemini
+python mission-01/04_dialogic_engine.py --mode galilean --debate-providers gemini,openai,anthropic
+python mission-01/04_dialogic_engine.py --mode both --provider mock --max-refinements 5
 ```
 
 **Security:** API credentials must not be committed to the public repository.

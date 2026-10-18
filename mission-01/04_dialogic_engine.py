@@ -23,10 +23,10 @@ Design notes
     logs/run_<timestamp>.jsonl (next to this script).
 
 Usage examples
-  python 04_dialogic_engine_starter.py --provider mock
-  python 04_dialogic_engine_starter.py --provider gemini --mode socratic
-  python 04_dialogic_engine_starter.py --mode galilean --debate-providers gemini,openai,anthropic
-  python 04_dialogic_engine_starter.py --mode socratic --interactive      # you are the user
+  python 04_dialogic_engine.py --provider mock
+  python 04_dialogic_engine.py --provider gemini --mode socratic
+  python 04_dialogic_engine.py --mode galilean --debate-providers gemini,openai,anthropic
+  python 04_dialogic_engine.py --mode socratic --interactive      # you are the user
 
 API keys (env vars or a git-ignored .env next to this script):
   GEMINI_API_KEY (or GOOGLE_API_KEY), OPENAI_API_KEY, ANTHROPIC_API_KEY
@@ -412,6 +412,8 @@ def http_post(url: str, payload: dict, headers: dict, timeout: int = 90, retries
             raise LLMError(f"HTTP {e.code} from {url.split('?')[0]}: {body}") from e
         except urllib.error.URLError as e:
             raise LLMError(f"Network error: {e.reason}") from e
+        except (OSError, ValueError) as e:             # read timeouts, resets, non-JSON bodies
+            raise LLMError(f"Bad response from {url.split('?')[0]}: {type(e).__name__}: {e}") from e
     raise LLMError("Request failed after retries")
 
 
@@ -538,6 +540,8 @@ class LLMClient:
                 {"model": self.model, "max_tokens": self.max_tokens, "temperature": self.temperature,
                  "system": system, "messages": [{"role": "user", "content": user}]},
                 {"x-api-key": get_key("anthropic"), "anthropic-version": "2023-06-01"})
+            if "error" in data or "content" not in data:
+                raise LLMError(f"Unexpected Anthropic response: {str(data)[:200]}")
             text = "".join(b.get("text", "") for b in data.get("content", []))
             usage = data.get("usage", {})
             in_t = usage.get("input_tokens", estimate_tokens(system + user))
@@ -548,7 +552,10 @@ class LLMClient:
                 {"model": self.model, "max_completion_tokens": self.max_tokens,
                  "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]},
                 {"Authorization": f"Bearer {get_key('openai')}"})
-            text = data["choices"][0]["message"]["content"] or ""
+            try:
+                text = data["choices"][0]["message"]["content"] or ""
+            except (KeyError, IndexError, TypeError) as e:
+                raise LLMError(f"Unexpected OpenAI response: {str(data)[:200]}") from e
             usage = data.get("usage", {})
             in_t = usage.get("prompt_tokens", estimate_tokens(system + user))
             out_t = usage.get("completion_tokens", estimate_tokens(text))
@@ -878,6 +885,21 @@ class SocraticEngine:
                     if directive[0] == "TERMINATION":      # termination limits are enforced by the engine
                         (state, reason), body, forced = directive, self._engine_summary(directive[1]), True
 
+            def _too_early(s_, r_):                      # 01 sec 3.1 / 02 sec 7.5: termination reasons have preconditions
+                return s_ == "TERMINATION" and ((r_ == "PROVISIONALLY_DEFENSIBLE" and L["survived"] < proto.defense_threshold)
+                                               or (r_ == "REFINEMENT_LIMIT" and k_tent < self.max_refinements))
+            if not directive and _too_early(state, reason):
+                early = reason
+                state, reason, body, _ = self._ask_aura(
+                    history, claim_tent, k_tent, pending, None, report, prev_state,
+                    note=f"Your previous reply ended the examination with {early}, but the protocol does not allow that yet "
+                         f"(survived tests: {L['survived']} of {proto.defense_threshold} needed; refinements: {k_tent}). "
+                         "Continue with PROBE or CONTRADICTION_CHECK.")
+                if _too_early(state, reason):
+                    self.mismatches += 1
+                    self.logger.event("fsm_mismatch", turn=turn, expected=["PROBE", None], actual=[state, reason])
+                    state, reason, body = "PROBE", None, "Which key term in your current claim have we not yet examined?"
+
             if pending and not (state == "TERMINATION" and reason == "APORIA"):
                 L["k"], L["claim"], L["survived"] = k_tent, claim_tent, 0   # refinement accepted
 
@@ -1040,6 +1062,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    for stream in (sys.stdout, sys.stderr):      # LLM text may contain characters the Windows console codec lacks
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     load_dotenv()
     args = build_parser().parse_args()
     provider = auto_provider() if args.provider == "auto" else args.provider
