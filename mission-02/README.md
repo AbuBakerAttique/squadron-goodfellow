@@ -28,7 +28,7 @@ mission-02/
 
 Before transmitting your team's repository link on the course website submission portal, complete all deliverables and record digital sign-offs from all four station officers:
 
-- [ ] **Historical Archivist (`01_Lovelace_Inquiry_Brief.md`):** 5-question Anti-Turing interrogation protocol & modern LLM evaluation against Lovelace's objection.
+- [X] **Historical Archivist (`01_Lovelace_Inquiry_Brief.md`):** 5-question Anti-Turing interrogation protocol & modern LLM evaluation against Lovelace's objection.
 - [ ] **Protocol Specialist (`02_FST_and_Noisy_Protocol.md`):** `FSTDialogueManager` class implementation (5 required states & slot memory) + Noisy Channel Protocol (7-word limit + noise tokens).
 - [ ] **Ethical Navigator (`03_Entropy_Hazard_Audit.md`):** FST stress tests documenting state breakage + Shannon information entropy & hazard audit under noise.
 - [ ] **Core Architect (`04_fst_noisy_simulator_starter.py` / `ps02_solution.ipynb`):** Integrated Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
