@@ -50,27 +50,87 @@ T1, T2 and T4 reveal that the manager accepts any non-empty string in destinatio
 
 ## 4. Shannon entropy and semantic loss
 
-Shannon entropy measures uncertainty over symbols, not whether a receiver correctly understands a message:
+Shannon entropy measures the uncertainty of symbols in a communication system. However, it does not determine whether the receiver correctly understands the meaning of a message.
 
-\[
-H(X)=-\sum_i p(x_i)\log_2 p(x_i).
-\]
+The Shannon entropy formula is:
 
-For seven equally likely noise tokens, the maximum entropy of the *noise-token choice* is:
+$$
+H(X) = -\sum_i p(x_i)\log_2 p(x_i)
+$$
 
-\[
-H(N)=\log_2(7)\approx 2.807\ \text{bits per token}.
-\]
+Where:
 
-Fatima's `channel_entropy()` estimates the empirical entropy of tokens actually injected across runs. With only a few transmissions, the measured value may be far below 2.807 bits even when the generator is uniform. It is **not** a measurement of the information lost from the original message or of the Shannon capacity of the communication link.
+H(X) represents information entropy.
 
-Shannon's capacity expression for an idealized band-limited Gaussian channel is:
+p(xᵢ) represents the probability of each symbol.
 
-\[
-C=W\log_2(1+S/N)\ \text{bits/second}.
-\]
+log₂ represents the base-2 logarithm.
 
-The simulator does not specify bandwidth `W`, signal power `S`, noise power `N`, or a measured physical link. Therefore a numerical channel capacity cannot be computed from these tests. Its seven-word limit is an application-level constraint, not itself a calculated physical capacity.
+4.1 Maximum Noise-Token Entropy
+
+Fatima's Noisy Channel Simulator uses seven possible noise tokens:
+
+Banana, Labyrinth, Quantum, Midnight, Velocity, Green, and Cosmological.
+
+If all seven tokens are equally likely, the maximum entropy is:
+
+$$
+H(N) = \log_2(7) \approx 2.807 \text{ bits per token}
+$$
+
+This represents the maximum uncertainty associated with selecting one noise token.
+
+Fatima's channel_entropy() function calculates the empirical entropy of noise tokens actually injected during testing.
+
+With only a few transmissions, the measured entropy may be lower than 2.807 bits, even when the tokens are selected uniformly.
+
+Important: Noise-token entropy does not directly measure how much meaning is lost from the original message.
+
+4.2 Shannon Channel Capacity
+
+Shannon's channel-capacity formula for an idealized band-limited Gaussian channel is:
+
+$$
+C = W\log_2\left(1+\frac{S}{N}\right)
+$$
+
+Where:
+
+C = Channel capacity (bits per second)
+
+W = Bandwidth (Hz)
+
+S = Signal power
+
+N = Noise power
+
+The simulator does not provide actual bandwidth, signal power, or noise power measurements.
+
+Therefore, numerical channel capacity cannot be calculated from the available tests.
+
+The seven-word limit is a software communication constraint rather than a measured physical channel capacity.
+
+4.3 Semantic Loss
+
+Although the simulator follows its seven-word restriction, important information can disappear when responses are shortened.
+
+For example:
+
+Original response:
+
+[CONFIRM] Course to 'Proxima Centauri' at 'Warp 7'. Confirm? (YES / NO)
+
+After noise injection:
+
+[CONFIRM] Course to 'Proxima Centauri' at Banana
+
+The transmitted message loses the speed and confirmation instructions.
+
+This demonstrates that a message can satisfy the technical communication rules while failing to preserve its intended meaning.
+
+Finding: Shannon entropy measures statistical uncertainty, while semantic loss concerns the information needed to understand and act on a message correctly.
+
+Both must be considered when evaluating the safety of AURA's communication system.
 
 ### 4.1 Demonstration of semantic loss
 
