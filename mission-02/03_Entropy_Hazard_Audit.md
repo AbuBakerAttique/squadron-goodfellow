@@ -4,7 +4,7 @@
 **Author:** Syeda Manahil Javed  
 **Squad:** Goodfellow (Group 18)  
 **Mission:** 02 — FST Dialogue Systems, Lovelace's Objection & Noisy Channels  
-**Date:** 19 October 2026
+
 
 ## 1. Purpose and scope
 
