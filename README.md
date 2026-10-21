@@ -24,6 +24,28 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 
 Each mission folder contains its own briefing and instructions.
 
+## Instructor Instructions
+
+The following general instructions are reproduced from the [instructor’s README](https://github.com/Unisvet/couse-c-ai/blob/main/README.md). The clone command refers to the instructor’s starter repository; our team repository is linked above.
+
+1. **Clone or Fork:** Clone this repository to your local squad development environment:
+   ```bash
+   git clone https://github.com/Unisvet/couse-c-ai.git
+   ```
+2. **Virtual Environment & Dependencies:**
+   ```bash
+   python -m venv .venv
+   # Windows:
+   .venv\Scripts\activate
+   # Linux/macOS:
+   source .venv/bin/activate
+
+   pip install torch numpy
+   ```
+3. **IDE Environment:** Work in **Visual Studio Code** using **Google Antigravity (`agy`)** and modern LLM APIs (Gemini, ChatGPT, Claude).
+4. **Solve & Verify:** Complete all role deliverables and verify tests using the verification functions embedded in each starter script.
+5. **Submit Solution:** Push your squad's solution repository to GitHub, copy your public repository URL, and transmit the link through the course web platform under the corresponding week's problem set tab.
+
 ## Mission Sign-offs
 
 Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Mission 3 remains pending. Each officer confirms their own approval before submission.
