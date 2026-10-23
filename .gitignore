@@ -3,3 +3,7 @@
 venv
 logs
 __pycache__/
+
+# Local Mission 3 benchmark data
+/mission-03/results/gqa_kvcache_results.csv
+/mission-03/results/gqa_kvcache_results.json
