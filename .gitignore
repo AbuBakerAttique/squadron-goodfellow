@@ -1,5 +1,10 @@
-.env
 .venv
 venv
-logs
+.env
+.env.*
 __pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+diff.git
+logs
