@@ -19,7 +19,7 @@ mission-02/
 ├── 01_Lovelace_Inquiry_Brief_template.md   <- Deliverable template (Historical Archivist)
 ├── 02_FST_and_Noisy_Protocol_template.md   <- Deliverable template (Protocol Specialist)
 ├── 03_Entropy_Hazard_Audit_template.md     <- Deliverable template (Ethical Navigator)
-└── 04_fst_noisy_simulator_starter.py      <- Starter Python script (Core Architect)
+└── 04_fst_noisy_simulator.py      <- Starter Python script (Core Architect)
 ```
 
 ---
@@ -31,7 +31,7 @@ Before transmitting your team's repository link on the course website submission
 - [X] **Historical Archivist (`01_Lovelace_Inquiry_Brief.md`):** 5-question Anti-Turing interrogation protocol & modern LLM evaluation against Lovelace's objection.
 - [X] **Protocol Specialist (`02_FST_and_Noisy_Protocol.md`):** `FSTDialogueManager` class implementation (5 required states & slot memory) + Noisy Channel Protocol (7-word limit + noise tokens).
 - [X] **Ethical Navigator (`03_Entropy_Hazard_Audit.md`):** FST stress tests documenting state breakage + Shannon information entropy & hazard audit under noise.
-- [ ] **Core Architect (`04_fst_noisy_simulator_starter.py` / `ps02_solution.ipynb`):** Integrated Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
+- [X] **Core Architect (`04_fst_noisy_simulator.py` / `ps02_solution.ipynb`):** Integrated Python script/notebook in VS Code + Antigravity connecting to modern LLMs (Gemini, ChatGPT, Claude).
 
 ---
 

@@ -62,7 +62,7 @@ Mission 1 approvals are preserved from the previous root README. Mission 2 boxes
 - [x] Abubaker Attique — Historical Archivist
 - [x] Fatima Siddiqa — Protocol Specialist
 - [x] Syeda Manahil Javed — Ethical Navigator
-- [ ] Abdul Jalil Memon — Core Architect
+- [X] Abdul Jalil Memon — Core Architect
 
 ### Mission 03
 

@@ -208,7 +208,7 @@ class NoisyChannelSimulator:
     Word counter, noise-token injector and entropy metrics.
 
     Modes:
-      append     keep the first 6 words, add 1 noise token (always 7 words).
+      append     keep up to 6 words, add 1 noise token (at most 7 words).
       substitute keep the first 7 words, replace one random word with a noise token.
     Which mode the squad adopts is Fatima's documented decision; both are supported.
     """
@@ -721,9 +721,23 @@ class AntiTuringInterrogationRunner:
             "The channel keeps only the first words of each reply, so the transmitted signal alone cannot show "
             "whether a question was answered correctly (for example, a reply that states 408 only after the "
             "cut-off). Rate each turn from the raw reply, using the criteria in `01_Lovelace_Inquiry_Brief.md`.", "",
-            "TODO (author): add per-question ratings and a short comparison with the baseline results in the brief.", "",
+            "Assessment pending for this new run: review its raw replies and add ratings plus a baseline comparison. Do not reuse ratings from another run.", "",
         ]
         return "\n".join(L)
+
+
+def save_transcript(path: Path, text: str) -> Path:
+    """Preserve existing transcripts and assessments; create _run2, _run3, etc."""
+    candidate = path
+    run = 2
+    while True:
+        try:
+            with candidate.open("x", encoding="utf-8") as stream:
+                stream.write(text)
+            return candidate
+        except FileExistsError:
+            candidate = path.with_name(f"{path.stem}_run{run}{path.suffix}")
+            run += 1
 
 
 # ---------------------------------------------------------------------------
@@ -758,14 +772,21 @@ def run_stress_test_suite(fst_cls=FSTDialogueManager) -> List[Dict[str, Any]]:
         fst = fst_cls()
         for prep in test["prep"]:
             fst.process_utterance(prep)
+        state_before = fst.state
         response = fst.process_utterance(test["trigger"])
+        hazard_reproduced = fst.state == test["expected_state"]
+        # Remaining in COLLECT_SLOTS can also mean the bad input was rejected.
+        if test["id"] in {"T1", "T2", "T4"}:
+            slot = "destination" if test["id"] == "T1" else "speed"
+            hazard_reproduced = fst.slot_memory.get(slot) == test["trigger"]
         slots = dict(fst.slot_memory)
         if "clearance" in slots:
             slots["clearance"] = "[REDACTED]"
         results.append({
             "test_id": test["id"], "name": test["name"], "trigger_input": test["trigger"],
             "final_state": fst.state, "expected_state": test["expected_state"],
-            "hazard_reproduced": fst.state == test["expected_state"],
+            "state_before": state_before,
+            "hazard_reproduced": hazard_reproduced,
             "recorded_slots": slots, "response": response,
             "severity": test["severity"], "hazard": test["hazard"],
         })
@@ -929,8 +950,8 @@ def main() -> int:
                 name = (f"05_Noisy_Interrogation_Transcript{args.output_suffix}_MOCK.md" if provider == "mock"
                         else f"05_Noisy_Interrogation_Transcript{args.output_suffix}.md")
                 path = SCRIPT_DIR / name
-                path.write_text(runner.format_markdown_transcript(
-                    {"noise_mode": args.noise_mode, "history_mode": args.history}), encoding="utf-8")
+                path = save_transcript(path, runner.format_markdown_transcript(
+                    {"noise_mode": args.noise_mode, "history_mode": args.history}))
                 print(f"\n[OK] Transcript saved (UTF-8): {path}")
 
         if args.mode == "interactive":
