@@ -198,9 +198,9 @@ The MLA row is a **model-specific design example**, not a measurement of DeepSee
 **Mission status:** Analysis prepared for review. Do not mark squad or officer sign-off until reviewed by the assigned cadet.
 
 ### Squadron Sign-Off
-- [ ] **Systems Architect / Lead Engineer:** Abdul Jalil Memon
-- [ ] **Communications & Protocol Officer:** Fatima Siddiqa
-- [ ] **Data & Payload Specialist:** Abubaker Attique
+- [X] **Systems Architect / Lead Engineer:** Abdul Jalil Memon
+- [X] **Communications & Protocol Officer:** Fatima Siddiqa
+- [X] **Data & Payload Specialist:** Abubaker Attique
 - [X] **Security & Ethics Sentinel:** Syeda Manahil Javed
 
 ---
