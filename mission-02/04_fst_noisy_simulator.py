@@ -778,7 +778,8 @@ def run_stress_test_suite(fst_cls=FSTDialogueManager) -> List[Dict[str, Any]]:
         # Remaining in COLLECT_SLOTS can also mean the bad input was rejected.
         if test["id"] in {"T1", "T2", "T4"}:
             slot = "destination" if test["id"] == "T1" else "speed"
-            hazard_reproduced = fst.slot_memory.get(slot) == test["trigger"]
+            stored = str(fst.slot_memory.get(slot, "")).strip().lower()  # tolerate a class that normalises input
+            hazard_reproduced = stored == test["trigger"].strip().lower()
         slots = dict(fst.slot_memory)
         if "clearance" in slots:
             slots["clearance"] = "[REDACTED]"
