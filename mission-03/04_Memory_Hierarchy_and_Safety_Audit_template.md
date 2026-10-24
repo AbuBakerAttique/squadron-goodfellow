@@ -201,7 +201,7 @@ The MLA row is a **model-specific design example**, not a measurement of DeepSee
 - [ ] **Systems Architect / Lead Engineer:** Abdul Jalil Memon
 - [ ] **Communications & Protocol Officer:** Fatima Siddiqa
 - [ ] **Data & Payload Specialist:** Abubaker Attique
-- [ ] **Security & Ethics Sentinel:** Syeda Manahil Javed
+- [X] **Security & Ethics Sentinel:** Syeda Manahil Javed
 
 ---
 
