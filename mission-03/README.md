@@ -32,7 +32,7 @@ Before transmitting your team's repository link on the course website submission
 - [ ] **Systems Architect (`01_MultiHead_Attention_Core_starter.py`):** Pure PyTorch `MultiHeadSelfAttention` with causal masking, head splitting, and empirical variance preservation unit test ($\frac{1}{\sqrt{d_k}}$).
 - [X] **Communications & Protocol Officer (`02_RoPE_Positional_Engine_starter.py`):** Rotary Positional Embeddings (`apply_rope`), complex 2D planar rotation, and relative position invariance verification.
 - [X] **Data & Payload Specialist (`03_GQA_and_KVCache_Benchmark_starter.py`):** Grouped-Query Attention layer (`GQAAttention`), stateful autoregressive `KVCache`, and latency/memory benchmark table.
-- [ ] **Security & Ethics Sentinel (`04_Memory_Hierarchy_and_Safety_Audit_template.md`):** FlashAttention IO complexity derivation ($O(N)$ SRAM tiling), KV-Cache DoS / OOM analysis, and mitigation evaluation (PagedAttention, MLA).
+- [X] **Security & Ethics Sentinel (`04_Memory_Hierarchy_and_Safety_Audit_template.md`):** FlashAttention IO complexity derivation ($O(N)$ SRAM tiling), KV-Cache DoS / OOM analysis, and mitigation evaluation (PagedAttention, MLA).
 
 ---
 
