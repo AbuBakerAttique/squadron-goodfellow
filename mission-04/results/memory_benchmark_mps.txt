@@ -1,0 +1,55 @@
+======================================================================
+USSE NOOSPHERE • LENGTH BIAS AUDIT & REFERENCE-FREE SimPO CORE
+Mission 04 / Part 3 — Data & Payload Specialist
+======================================================================
+[1] SELF-CHECKS
+PASS: Pearson positive/negative/undefined and invalid inputs
+PASS: SimPO formula, finite differences, gradient direction, margin, stability and masked normalisation
+PASS: bootstrap interval, correlation wording and pairs-file validation
+======================================================================
+[2] LENGTH-BIAS DIAGNOSTIC  (real exploratory pairs)
+    Data    : Anthropic/hh-rlhf helpful-base/test.jsonl.gz @ 09be8c5, 100 pairs (seed 42, no truncation)
+    Policy  : HuggingFaceTB/SmolLM2-135M-Instruct @ 12fd25f
+    Ref     : HuggingFaceTB/SmolLM2-135M @ 93efa2f
+    Status  : exploratory instruct-vs-base comparison; no model was trained here
+    Pairs   : 100; chosen answer is the longer one in 60
+    Mean per-token log-ratio (policy vs ref): chosen -0.1125, rejected -0.1104
+    Pearson r against the length difference |yw|-|yl|:
+      DPO log-ratio margin (summed, dw-dl)      : -0.420   95% bootstrap [-0.644, -0.127]
+      length-normalised log-ratio margin        : +0.170
+      SimPO margin (avg-logp gap, ref-free)     : +0.159
+    Implicit-reward accuracy (dw-dl > 0)        : 39%
+    Reading : moderate length dependence: when the chosen answer is longer the margin tends to be LOWER.
+    Association only, not cause. The sign depends on the checkpoints: a negative mean per-token
+    log-ratio makes longer answers score LOWER, a positive one HIGHER.
+======================================================================
+[3] SimPO LOSS (beta=2.0, gamma=0.5, average per-token log-probs)
+    Synthetic sample, 4 pairs (arithmetic check)
+      loss 0.6732 | reward gap +0.545 | win rate (gap>0) 100% | margin pass rate (gap>gamma) 75%
+    Real pairs, policy log-probs, 100 pairs (policy was not SimPO-trained)
+      loss 1.1305 | reward gap +0.176 | win rate (gap>0) 47% | margin pass rate (gap>gamma) 35%
+======================================================================
+[4] MEMORY: DPO (policy + frozen reference) vs SimPO (policy only)
+    Analytical, 7B model, FP16 weights only : DPO 26.08 GiB | SimPO 13.04 GiB | saving 50.0%
+    MEASURED CPU tensor-byte accounting, toy token model, FP32 AdamW (MiB; NOT GPU VRAM):
+      component                  DPO     SimPO
+      model weights             4.00      2.00
+      gradients                 2.00      2.00
+      AdamW state               4.00      4.00
+      saved activations         5.02      5.02
+      TOTAL                    15.02     13.02
+      saving: weights only 50.0% | total 13.3%
+    The briefing's ~50% holds for stored weights only. Gradients, optimiser state and activations
+    exist once in both methods, so the total saving is smaller. A real VRAM figure needs a GPU run.
+    MEASURED on Apple M4 Pro (MPS, unified memory) (MPS allocator, MiB; float32, AdamW, foreach=False):
+      method     weights   peak training
+      DPO           4.00           13.02
+      SimPO         2.00           11.02
+      peak-training saving, SimPO vs DPO: 15.3%
+      Sampled allocation per stage (MiB, sampled at 3 points of one step; lower bound of the true peak):
+        stage                          DPO     SimPO
+        after forward                13.02     11.02
+        after backward               10.02      8.02
+        after optimiser step         10.02      8.02
+      Unified memory: this is allocator bytes from system RAM, not dedicated VRAM.
+======================================================================
