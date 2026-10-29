@@ -12,3 +12,6 @@ logs
 # Local Mission 3 benchmark data
 /mission-03/results/gqa_kvcache_results.csv
 /mission-03/results/gqa_kvcache_results.json
+
+# Local Mission 4 working notes
+/mission-04/03_Length_Bias_and_SimPO_notes.md
