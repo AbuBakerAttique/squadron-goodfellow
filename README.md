@@ -7,7 +7,7 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 
 ## Team Members and Roles
 
-| Member | Missions 1–2 Role | Mission 3 Role |
+| Member | Missions 1–2 Role | Missions 3–5 Role |
 |---|---|---|
 | Abubaker Attique | Historical Archivist | Data & Payload Specialist |
 | Fatima Siddiqa | Protocol Specialist | Communications & Protocol Officer |
@@ -21,6 +21,8 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 | 01 | The Architecture of Argument & Dialogic Protocols | [Mission 1](mission-01/) |
 | 02 | FST Dialogue Systems, Lovelace's Objection & Noisy Channels | [Mission 2](mission-02/) |
 | 03 | Multi-Head Attention, RoPE Vector Rotation & Grouped-Query KV-Cache Optimization | [Mission 3](mission-03/) |
+| 04 | Direct Preference Optimization (DPO), Verbosity Regularization & Steering Vector Control | [Mission 4](mission-04/) |
+| 05 | Dual-Path GraphRAG, Hybrid Search & The Google NotebookLM Grounding Lab | [Mission 5](mission-05/) |
 
 Each mission folder contains its own briefing and instructions.
 
@@ -48,7 +50,7 @@ The following general instructions are reproduced from the [instructor’s READM
 
 ## Mission Sign-offs
 
-Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Mission 3 remains pending. Each officer confirms their own approval before submission.
+Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Missions 4 and 5 are pending. Each officer confirms their own approval before submission.
 
 ### Mission 01
 
@@ -70,6 +72,20 @@ Mission 1 approvals are preserved from the previous root README. Mission 2 boxes
 - [X] Fatima Siddiqa — Communications & Protocol Officer
 - [X] Syeda Manahil Javed — Security & Ethics Sentinel
 - [X] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 04
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 05
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
 
 ## Submission
 
