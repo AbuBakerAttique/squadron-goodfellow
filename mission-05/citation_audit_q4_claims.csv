@@ -1,0 +1,7 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,Neither paper discusses combining RAG-Token marginalisation with community summaries,,,uncited,"Statement about what the papers contain, with no badge"
+C02,"Lewis formulate RAG-Token within an end-to-end trained BART model, marginalising over top-K passages per decoding step",,,uncited,Statement about what Lewis et al. do; matches passages read for Query 2 but is not cited here
+C03,Edge implement GraphRAG as a prompt-based map-reduce workflow over frozen black-box LLMs (GPT-4-turbo),,,uncited,Statement about what Edge et al. do; matches passages read for Query 2 but is not cited here
+C04,Inference-labelled: could be applied if an open-weight LM were fine-tuned to condition on several community summaries,,,uncited,Labelled inference
+C05,"Inference-labelled: needs next-token logits, so incompatible with API-only models",,,uncited,Labelled inference
+C06,Inference-labelled: marginalising over long community summaries would dilute coherence and be costly,,,uncited,Labelled inference

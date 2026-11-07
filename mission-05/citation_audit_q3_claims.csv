@@ -1,0 +1,9 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,Lewis: the knowledge source will probably never be entirely factual or free of bias,1,S,supported,At least one cited passage fully supports it
+C02,"Lewis: updating the document encoder was too costly, so it was kept frozen",2,S,supported,At least one cited passage fully supports it
+C03,Lewis: retrieval collapse on tasks such as story generation,3,S,supported,At least one cited passage fully supports it
+C04,"Edge: evaluation limited to two ~1M-token datasets, needs validation on other domains",4,S,supported,At least one cited passage fully supports it
+C05,Edge: Directness favoured vector RAG because GraphRAG answers are less concise (framed as a limitation),5 6 7,no single badge,partial,"The cited passages support that vector RAG won Directness, but the paper presents Directness as an expected control result, not as a limitation"
+C06,Inference-labelled: Lewis easy test-time updates via index hot-swapping vs GraphRAG maintenance overhead,8 9,S,supported,At least one cited passage fully supports it
+C07,Inference-labelled: GraphRAG indexing takes hours of LLM runtime per million tokens,10,S,supported,At least one cited passage fully supports it
+C08,Inference-labelled: hierarchical summarisation could compound early extraction errors,11 12,S,supported,At least one cited passage fully supports it

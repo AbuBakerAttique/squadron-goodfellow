@@ -1,0 +1,85 @@
+claim_id,claim,badge,source,verdict,note
+C00,Lewis: flat vector index over discrete text chunks,1,rag-paper.pdf,supported,
+C00,Lewis: flat vector index over discrete text chunks,2,rag-paper.pdf,supported,"Index is FAISS with HNSW approximation, so 'flat' is loose"
+C01,Edge: hierarchical knowledge graph and nested community summaries,3,graph-rag.pdf,partial,Title and abstract only; no hierarchy or summaries mentioned
+C01,Edge: hierarchical knowledge graph and nested community summaries,4,graph-rag.pdf,supported,
+C01,Edge: hierarchical knowledge graph and nested community summaries,5,graph-rag.pdf,partial,"Figure 1 caption: LLM-derived graph index, community detection and community summaries; the words hierarchical and nested do not appear. Second pass 2026-11-07: changed from supported."
+C02,Lewis: disjoint 100-word passages encoded as dense embeddings,2,rag-paper.pdf,supported,Disjoint 100-word chunks
+C02,Lewis: disjoint 100-word passages encoded as dense embeddings,6,rag-paper.pdf,supported,Dense BERT encoders
+C03,"Edge: chunks -> entities, relationships, claims -> nodes and weighted edges",4,graph-rag.pdf,supported,
+C03,"Edge: chunks -> entities, relationships, claims -> nodes and weighted edges",7,graph-rag.pdf,partial,Workflow overview; only the text-chunk step
+C03,"Edge: chunks -> entities, relationships, claims -> nodes and weighted edges",8,graph-rag.pdf,supported,Duplicates become edge weights
+C04,"Lewis: BERT_d bi-encoder, embeddings in a MIPS/FAISS index",2,rag-paper.pdf,supported,
+C04,"Lewis: BERT_d bi-encoder, embeddings in a MIPS/FAISS index",6,rag-paper.pdf,supported,
+C05,Lewis: no relational links or entity structure between chunks,2,rag-paper.pdf,partial,"Describes disjoint 100-word chunks in a single FAISS index, which fits the claim, but says nothing about relational links or entity structure (an absence claim). Second pass 2026-11-07: changed from unsupported."
+C05,Lewis: no relational links or entity structure between chunks,9,graph-rag.pdf,partial,Says conventional RAG returns semantically similar records; absence of links is inferred
+C06,Edge: hierarchical Leiden community detection,4,graph-rag.pdf,partial,"Mentions community detection, not Leiden or hierarchy"
+C06,Edge: hierarchical Leiden community detection,10,graph-rag.pdf,supported,
+C07,"Lewis: no pre-computed synthesis, raw text chunks unchanged",1,rag-paper.pdf,partial,"Describes dense index, not absence of synthesis"
+C07,"Lewis: no pre-computed synthesis, raw text chunks unchanged",11,rag-paper.pdf,supported,Retrieves raw text
+C08,Edge: pre-generates report-like community summaries across levels,4,graph-rag.pdf,supported,
+C08,Edge: pre-generates report-like community summaries across levels,12,graph-rag.pdf,partial,Hierarchy partition only
+C08,Edge: pre-generates report-like community summaries across levels,13,graph-rag.pdf,supported,
+C09,Lewis: retrieval is explicit similarity search,3,graph-rag.pdf,partial,Abstract contrasts QFS with explicit retrieval; not about Lewis's mechanism
+C09,Lewis: retrieval is explicit similarity search,9,graph-rag.pdf,supported,"Describes conventional RAG, written by Edge not Lewis"
+C10,"Lewis: BERT_q query encoder, top-K by MIPS",6,rag-paper.pdf,supported,
+C10,"Lewis: BERT_q query encoder, top-K by MIPS",14,rag-paper.pdf,supported,
+C11,Lewis: BART conditions on retrieved documents,1,rag-paper.pdf,partial,Mentions seq2seq generator and retriever generally
+C11,Lewis: BART conditions on retrieved documents,15,rag-paper.pdf,supported,
+C12,Lewis: RAG-Sequence vs RAG-Token,16,rag-paper.pdf,partial,"Generator definition, not the Sequence/Token distinction"
+C12,Lewis: RAG-Sequence vs RAG-Token,17,rag-paper.pdf,supported,
+C12,Lewis: RAG-Sequence vs RAG-Token,18,rag-paper.pdf,supported,
+C13,Edge: QFS with map-reduce over community summaries,3,graph-rag.pdf,partial,"Mentions QFS, not map-reduce"
+C13,Edge: QFS with map-reduce over community summaries,4,graph-rag.pdf,partial,Intro; map-reduce detail not confirmed
+C13,Edge: QFS with map-reduce over community summaries,19,graph-rag.pdf,supported,
+C14,"Edge: map step, parallel partial answers, helpfulness 0-100",19,graph-rag.pdf,supported,
+C15,"Edge: reduce step, sort by score, final answer",4,graph-rag.pdf,partial,Intro; sorting detail not in passage
+C15,"Edge: reduce step, sort by score, final answer",19,graph-rag.pdf,supported,
+C16,Vector RAG is built for fact retrieval from a small subset of records,9,graph-rag.pdf,supported,
+C16,Vector RAG is built for fact retrieval from a small subset of records,20,graph-rag.pdf,supported,
+C17,Edge identify two major failure modes of vector RAG,3,graph-rag.pdf,partial,"Abstract says RAG fails on global questions with the 'main themes' example, but names no two failure modes"
+C18,'Thematic fragmentation' failure mode,20,graph-rag.pdf,partial,General statement that vector RAG does not support sensemaking
+C18,'Thematic fragmentation' failure mode,21,graph-rag.pdf,partial,'Thematic fragmentation' and 'hundreds or thousands of documents' are not stated
+C19,'False summarization' failure mode,9,graph-rag.pdf,partial,Only says retrieval returns semantically similar records
+C19,'False summarization' failure mode,22,graph-rag.pdf,partial,"Broader-impacts paragraph: says vector RAG would answer global questions with samples of retrieved facts presented as global summaries, which matches the end of the assertion; the semantic-overlap mechanism is not stated. Second pass 2026-11-07: changed from unsupported."
+C20,GraphRAG turns the problem into hierarchical QFS,3,graph-rag.pdf,partial,"QFS yes, 'hierarchical' not in passage"
+C21,"Hierarchical Leiden gives mutually exclusive, collectively exhaustive clusters",10,graph-rag.pdf,supported,
+C21,"Hierarchical Leiden gives mutually exclusive, collectively exhaustive clusters",12,graph-rag.pdf,supported,Exact wording
+C22,Community summaries roll lower-level detail up to higher-level reports,4,graph-rag.pdf,supported,Bottom-up summaries
+C22,Community summaries roll lower-level detail up to higher-level reports,13,graph-rag.pdf,supported,
+C23,Operate at C0 or zoom into C1-C3,23,graph-rag.pdf,supported,
+C23,Operate at C0 or zoom into C1-C3,24,graph-rag.pdf,supported,
+C24,C0 summaries cut context tokens by 97% or more vs full text,25,graph-rag.pdf,supported,Table 2: C0 about 26.7k vs TS about 1.01M tokens
+C24,C0 summaries cut context tokens by 97% or more vs full text,26,graph-rag.pdf,supported,'over 97% fewer tokens'
+C24,C0 summaries cut context tokens by 97% or more vs full text,27,graph-rag.pdf,partial,"Conclusion says 'fraction of the token cost', no figure"
+C25,"Lewis: SOTA on NQ, TriviaQA, WebQ, CuratedTrec; beats T5 and DPR",28,rag-paper.pdf,supported,Abstract
+C25,"Lewis: SOTA on NQ, TriviaQA, WebQ, CuratedTrec; beats T5 and DPR",29,rag-paper.pdf,supported,
+C25,"Lewis: SOTA on NQ, TriviaQA, WebQ, CuratedTrec; beats T5 and DPR",30,rag-paper.pdf,supported,
+C26,"Lewis: more factual, diverse, specific on Jeopardy and MS-MARCO than BART",28,rag-paper.pdf,supported,Abstract
+C26,"Lewis: more factual, diverse, specific on Jeopardy and MS-MARCO than BART",29,rag-paper.pdf,supported,
+C26,"Lewis: more factual, diverse, specific on Jeopardy and MS-MARCO than BART",31,rag-paper.pdf,supported,
+C26,"Lewis: more factual, diverse, specific on Jeopardy and MS-MARCO than BART",32,rag-paper.pdf,supported,
+C27,Lewis: index can be hot-swapped without retraining,29,rag-paper.pdf,partial,"Mentions benefits of combining memories, not hot-swapping"
+C27,Lewis: index can be hot-swapped without retraining,33,rag-paper.pdf,supported,
+C27,Lewis: index can be hot-swapped without retraining,34,rag-paper.pdf,supported,2016 vs 2018 index experiment
+C28,"Edge: C0-C3 beat vector RAG, comprehensiveness 72-83%, diversity 62-82%",35,graph-rag.pdf,supported,Numbers match
+C28,"Edge: C0-C3 beat vector RAG, comprehensiveness 72-83%, diversity 62-82%",36,graph-rag.pdf,partial,"Table 3 claim counts, no win rates"
+C28,"Edge: C0-C3 beat vector RAG, comprehensiveness 72-83%, diversity 62-82%",37,graph-rag.pdf,supported,
+C29,Edge: vector RAG beats GraphRAG on directness,35,graph-rag.pdf,supported,'vector RAG produces the most direct responses'
+C29,Edge: vector RAG beats GraphRAG on directness,38,graph-rag.pdf,supported,Defines directness
+C29,Edge: vector RAG beats GraphRAG on directness,39,graph-rag.pdf,partial,Raw win-rate table
+C30,Edge: community summaries vs source-text map-reduce; 26-33% / >97% fewer tokens,26,graph-rag.pdf,supported,
+C30,Edge: community summaries vs source-text map-reduce; 26-33% / >97% fewer tokens,39,graph-rag.pdf,unsupported,"Directness table, says nothing on tokens or comprehensiveness gains"
+C31,Edge emphasise failure of vector RAG on global sensemaking,3,graph-rag.pdf,supported,Abstract: 'RAG fails on global questions'
+C31,Edge emphasise failure of vector RAG on global sensemaking,20,graph-rag.pdf,supported,
+C32,GraphRAG is comparatively verbose and indirect for narrow queries,35,graph-rag.pdf,supported,Directness result; 'narrow queries' is an extrapolation
+C32,GraphRAG is comparatively verbose and indirect for narrow queries,39,graph-rag.pdf,partial,Raw win-rate table
+C33,"Lewis: indexing lightweight, single-pass dense encodings",6,rag-paper.pdf,partial,"Encoder definition, no cost statement"
+C33,"Lewis: indexing lightweight, single-pass dense encodings",40,rag-paper.pdf,supported,Document encoder kept fixed because re-indexing is costly
+C34,"GraphRAG: heavy indexing cost (LLM extraction, gleaning, recursive summaries)",7,graph-rag.pdf,partial,Workflow overview; no gleaning or self-reflection text
+C34,"GraphRAG: heavy indexing cost (LLM extraction, gleaning, recursive summaries)",13,graph-rag.pdf,supported,
+C34,"GraphRAG: heavy indexing cost (LLM extraction, gleaning, recursive summaries)",41,graph-rag.pdf,supported,Indexing took 281 minutes
+C34,"GraphRAG: heavy indexing cost (LLM extraction, gleaning, recursive summaries)",42,graph-rag.pdf,partial,Chunk size and LLM-call cost; gleaning not mentioned
+C35,Lewis: index can be updated by appending or hot-swapping embeddings,29,rag-paper.pdf,partial,Not about updating
+C35,Lewis: index can be updated by appending or hot-swapping embeddings,33,rag-paper.pdf,supported,Swap of the whole index; 'appending' is not shown
+C35,Lewis: index can be updated by appending or hot-swapping embeddings,34,rag-paper.pdf,supported,

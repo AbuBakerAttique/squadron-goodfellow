@@ -1,0 +1,10 @@
+claim_id,claim,badge,source,verdict,note
+C01,"Lewis chunk size: disjoint 100-word chunks, Dec 2018 Wikipedia dump, 21M documents",1,rag-paper.pdf,supported,"Disjoint 100-word chunks, December 2018 dump, 21M documents"
+C02,Lewis report no evaluation or ablation of chunk size; 100-word standard adopted from prior work,1,rag-paper.pdf,partial,Shows 100-word chunks following prior work; an absence claim (no chunk-size ablation) cannot be confirmed from one passage
+C03,"Edge chunk size: 600 tokens, 100-token overlap (1,669 podcast chunks, 3,197 news chunks)",2,graph-rag.pdf,partial,Podcast corpus: 1669 x 600-token chunks with 100-token overlap; news figures are in the next passage
+C03,"Edge chunk size: 600 tokens, 100-token overlap (1,669 podcast chunks, 3,197 news chunks)",3,graph-rag.pdf,partial,News corpus: 3197 x 600-token chunks with 100-token overlap; podcast figures are elsewhere
+C04,Edge also evaluates 600/1200/2400-token chunk sizes in an extraction study,4,graph-rag.pdf,partial,Compares 600 vs 2400 tokens on HotPotQA; 1200 not mentioned here
+C04,Edge also evaluates 600/1200/2400-token chunk sizes in an extraction study,5,graph-rag.pdf,supported,Figure 3 caption: entity references by chunk size 600/1200/2400 and self-reflection iterations
+C05,Edge effect: larger chunks cut LLM calls and cost but degrade recall; HotPotQA ~2x entities at 600 vs 2400,4,graph-rag.pdf,supported,Larger chunks cost less but extract fewer entities; HotPotQA almost twice as many at 600 as at 2400
+C05,Edge effect: larger chunks cut LLM calls and cost but degrade recall; HotPotQA ~2x entities at 600 vs 2400,5,graph-rag.pdf,partial,Figure 3 plots entity references by chunk size; values are not in the text
+C05,Edge effect: larger chunks cut LLM calls and cost but degrade recall; HotPotQA ~2x entities at 600 vs 2400,6,graph-rag.pdf,partial,Longer chunks need fewer LLM calls but degrade recall; no HotPotQA figure

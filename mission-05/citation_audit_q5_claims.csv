@@ -1,0 +1,6 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,"Lewis chunk size: disjoint 100-word chunks, Dec 2018 Wikipedia dump, 21M documents",1,S,supported,At least one cited passage fully supports it
+C02,Lewis report no evaluation or ablation of chunk size; 100-word standard adopted from prior work,1,no single badge,partial,Absence claim: the cited passage shows the 100-word chunking but cannot confirm that no chunk-size test exists; not checked against the full PDF
+C03,"Edge chunk size: 600 tokens, 100-token overlap (1,669 podcast chunks, 3,197 news chunks)",2 3,no single badge,supported,At least one cited passage fully supports it
+C04,Edge also evaluates 600/1200/2400-token chunk sizes in an extraction study,4 5,S,supported,At least one cited passage fully supports it
+C05,Edge effect: larger chunks cut LLM calls and cost but degrade recall; HotPotQA ~2x entities at 600 vs 2400,4 5 6,S,supported,At least one cited passage fully supports it

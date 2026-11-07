@@ -1,0 +1,158 @@
+claim_id,claim,badge,source,verdict,note
+C01,"Lewis corpus: Dec 2018 Wikipedia dump, 21M disjoint 100-word chunks, FAISS MIPS + HNSW",1,rag-paper.pdf,partial,"Passage is the DPR bi-encoder/MIPS section; no dump date, 21M chunks, FAISS or HNSW"
+C01,"Lewis corpus: Dec 2018 Wikipedia dump, 21M disjoint 100-word chunks, FAISS MIPS + HNSW",2,rag-paper.pdf,supported,"States Dec 2018 dump, disjoint 100-word chunks, 21M docs, FAISS MIPS with HNSW"
+C02,"Lewis benchmarks open-domain QA: NQ, TQA, WQ, CT",3,rag-paper.pdf,supported,"Names NQ, WQ, CT and TriviaQA as QA results"
+C02,"Lewis benchmarks open-domain QA: NQ, TQA, WQ, CT",4,rag-paper.pdf,supported,Lists the four open-domain QA datasets
+C03,Lewis abstractive QA MS-MARCO NLG v2.1 without gold passages,5,rag-paper.pdf,supported,MSMARCO NLG v2.1; supplied gold passages not used
+C03,Lewis abstractive QA MS-MARCO NLG v2.1 without gold passages,6,rag-paper.pdf,partial,Says SOTA models access gold passages (implying RAG does not); no explicit v2.1 or no-gold statement
+C04,Lewis Jeopardy question generation using SearchQA splits,3,rag-paper.pdf,partial,Mentions Jeopardy generation but not SearchQA splits
+C04,Lewis Jeopardy question generation using SearchQA splits,7,rag-paper.pdf,supported,SearchQA splits 100K/14K/27K for Jeopardy generation
+C05,Lewis FEVER 3-way and 2-way classification,3,rag-paper.pdf,partial,Mentions FEVER within 4.3% of pipelines; no 3-way/2-way detail
+C05,Lewis FEVER 3-way and 2-way classification,8,rag-paper.pdf,supported,Standard 3-way and 2-way FEVER tasks
+C06,"Lewis closed-book baselines T5-11B, T5-11B+SSM, fine-tuned BART-large",4,rag-paper.pdf,partial,Describes closed-book QA generally; no T5-11B+SSM or BART baselines
+C06,"Lewis closed-book baselines T5-11B, T5-11B+SSM, fine-tuned BART-large",9,rag-paper.pdf,partial,"BART-large is RAG's generator here, not a closed-book baseline"
+C06,"Lewis closed-book baselines T5-11B, T5-11B+SSM, fine-tuned BART-large",10,rag-paper.pdf,supported,Table lists closed-book T5-11B and T5-11B+SSM and a BART baseline
+C07,Lewis open-book baselines REALM and DPR (cross-encoder reranker + extractive reader),1,rag-paper.pdf,partial,DPR as basis of RAG's retriever; not the REALM/DPR baselines or cross-encoder detail
+C07,Lewis open-book baselines REALM and DPR (cross-encoder reranker + extractive reader),4,rag-paper.pdf,partial,Describes extractive QA paradigm generically; REALM/DPR not named
+C07,Lewis open-book baselines REALM and DPR (cross-encoder reranker + extractive reader),10,rag-paper.pdf,partial,Table lists open-book REALM and DPR; reranker/extractive-reader detail is elsewhere
+C07,Lewis open-book baselines REALM and DPR (cross-encoder reranker + extractive reader),11,rag-paper.pdf,supported,DPR QA system uses cross-encoder re-ranker plus extractive reader; REALM named
+C08,"Lewis task-specific pipelines with gold supervision (FEVER Zhong, Thorne&Vlachos; MS-MARCO SOTA PALM)",8,rag-paper.pdf,partial,Mentions Thorne and Vlachos and no retrieval supervision; no Zhong or PALM
+C08,"Lewis task-specific pipelines with gold supervision (FEVER Zhong, Thorne&Vlachos; MS-MARCO SOTA PALM)",10,rag-paper.pdf,partial,Table has SotA row; no named pipelines or PALM
+C08,"Lewis task-specific pipelines with gold supervision (FEVER Zhong, Thorne&Vlachos; MS-MARCO SOTA PALM)",12,rag-paper.pdf,partial,Thorne and Vlachos train on gold evidence sentence; no Zhong or MS-MARCO PALM
+C09,Lewis retriever ablations: frozen DPR and BM25,13,rag-paper.pdf,supported,Freezes retriever and swaps in BM25
+C09,Lewis retriever ablations: frozen DPR and BM25,14,rag-paper.pdf,supported,Table 6 ablations: frozen-retriever and BM25 variants
+C10,Lewis metric: EM for open-domain QA,4,rag-paper.pdf,supported,Reports Exact Match for the QA datasets
+C11,Lewis metrics: BLEU-1 and ROUGE-L for MS-MARCO,6,rag-paper.pdf,supported,Bleu and Rouge-L for MS-MARCO
+C11,Lewis metrics: BLEU-1 and ROUGE-L for MS-MARCO,10,rag-paper.pdf,supported,MSMARCO R-L and B-1 columns
+C12,"Lewis metrics: Q-BLEU-1, BLEU-1, pairwise human eval (factuality, specificity) for Jeopardy",7,rag-paper.pdf,supported,"Q-BLEU-1 plus factuality/specificity human evals, pairwise comparison"
+C12,"Lewis metrics: Q-BLEU-1, BLEU-1, pairwise human eval (factuality, specificity) for Jeopardy",10,rag-paper.pdf,partial,Jeopardy B-1 and QB-1 columns; human eval not in table
+C12,"Lewis metrics: Q-BLEU-1, BLEU-1, pairwise human eval (factuality, specificity) for Jeopardy",14,rag-paper.pdf,supported,Table 4 human factuality/specificity plus Q-BLEU/B-1 columns in Table 6
+C12,"Lewis metrics: Q-BLEU-1, BLEU-1, pairwise human eval (factuality, specificity) for Jeopardy",15,rag-paper.pdf,supported,Q-BLEU-1 comparison and pairwise human evaluation (452 pairs)
+C13,Lewis metric: generation diversity = distinct/total tri-grams,14,rag-paper.pdf,partial,Shows tri-gram diversity numbers (70.7/77.8/83.5) without the ratio definition
+C13,Lewis metric: generation diversity = distinct/total tri-grams,16,rag-paper.pdf,supported,Ratio of distinct to total n-grams; Table 5 gives tri-grams
+C14,Lewis metric: FEVER classification accuracy,8,rag-paper.pdf,supported,Reports label accuracy for FEVER
+C14,Lewis metric: FEVER classification accuracy,10,rag-paper.pdf,supported,FEVER label accuracy columns
+C15,"Lewis headline: RAG-Seq 44.5 NQ, 45.2 WQ, 52.2 CT, 68.0 TQA; beats T5-11B, REALM, DPR",3,rag-paper.pdf,partial,"SOTA on NQ, WQ, CT stated without the numbers"
+C15,"Lewis headline: RAG-Seq 44.5 NQ, 45.2 WQ, 52.2 CT, 68.0 TQA; beats T5-11B, REALM, DPR",10,rag-paper.pdf,supported,"Table 1 gives 44.5/45.2/52.2/68.0 and T5, REALM, DPR scores"
+C15,"Lewis headline: RAG-Seq 44.5 NQ, 45.2 WQ, 52.2 CT, 68.0 TQA; beats T5-11B, REALM, DPR",17,rag-paper.pdf,partial,Gives RAG-Seq 44.5 NQ and T5-11B comparison only
+C16,Lewis headline: beats BART on MS-MARCO (+2.6 BLEU-1/ROUGE-L) and Jeopardy (22.2 vs 19.7 Q-BLEU-1),6,rag-paper.pdf,partial,Supports the MS-MARCO +2.6 half only
+C16,Lewis headline: beats BART on MS-MARCO (+2.6 BLEU-1/ROUGE-L) and Jeopardy (22.2 vs 19.7 Q-BLEU-1),10,rag-paper.pdf,supported,Table 2 gives MS-MARCO and Jeopardy figures (19.7 vs 22.2)
+C16,Lewis headline: beats BART on MS-MARCO (+2.6 BLEU-1/ROUGE-L) and Jeopardy (22.2 vs 19.7 Q-BLEU-1),15,rag-paper.pdf,partial,"Both RAG models beat BART on Jeopardy Q-BLEU-1; no 22.2/19.7 figures, no MS-MARCO"
+C17,"Lewis headline: human eval factuality 42.7% vs 7.1%, higher tri-gram diversity",14,rag-paper.pdf,supported,Tables 4 and 5: 42.7% vs 7.1% and higher tri-gram diversity
+C17,"Lewis headline: human eval factuality 42.7% vs 7.1%, higher tri-gram diversity",15,rag-paper.pdf,partial,Gives 42.7% vs 7.1% factuality; diversity not in this passage
+C18,Lewis headline: FEVER 3-way within 4.3% of pipelines needing gold evidence,3,rag-paper.pdf,supported,FEVER within 4.3% of pipeline models with strong retrieval supervision
+C18,Lewis headline: FEVER 3-way within 4.3% of pipelines needing gold evidence,18,rag-paper.pdf,supported,3-way within 4.3% of pipeline systems trained with retrieval supervision
+C19,"Lewis headline: index hot-swap 2018->2016, 68% -> 70%",19,rag-paper.pdf,partial,Describes the 2016 vs 2018 index swap; the 68%/70% figures are in the next passage
+C19,"Lewis headline: index hot-swap 2018->2016, 68% -> 70%",20,rag-paper.pdf,partial,"Gives 70% (2016 index, 2016 leaders) and 68% (2018 index, 2018 leaders); these are matched-index accuracies, not a shift from 68% to 70%"
+C20,"Edge corpora: two ~1M-token corpora, 600-token chunks, 100-token overlap",21,graph-rag.pdf,partial,Abstract mentions datasets in the 1M-token range; no chunk size or overlap
+C20,"Edge corpora: two ~1M-token corpora, 600-token chunks, 100-token overlap",22,graph-rag.pdf,supported,Two datasets in the 1M-token range; 600-token chunks with 100-token overlap
+C20,"Edge corpora: two ~1M-token corpora, 600-token chunks, 100-token overlap",23,graph-rag.pdf,partial,News corpus chunking (600/100) only; ~1.7M tokens
+C21,"Edge podcast: Kevin Scott Behind the Tech, 1,669 chunks, ~1M tokens",22,graph-rag.pdf,supported,"1669 x 600-token chunks, ~1M tokens, Behind the Tech with Kevin Scott"
+C21,"Edge podcast: Kevin Scott Behind the Tech, 1,669 chunks, ~1M tokens",23,graph-rag.pdf,unsupported,"Passage is about the news corpus and conditions, not the podcast"
+C22,"Edge news: MultiHop-RAG, Sep 2013-Dec 2023, 3,197 chunks, ~1.7M tokens",23,graph-rag.pdf,supported,"News Sep 2013-Dec 2023, categories, 3197 chunks, ~1.7M tokens"
+C23,"Edge: 125 test questions per dataset, LLM personas/tasks/questions",24,graph-rag.pdf,partial,Describes persona/task/question generation; no 125 figure
+C23,"Edge: 125 test questions per dataset, LLM personas/tasks/questions",25,graph-rag.pdf,partial,Algorithm 1 for question generation; count of 125 is in the next passage
+C23,"Edge: 125 test questions per dataset, LLM personas/tasks/questions",26,graph-rag.pdf,partial,K=M=N=5 gives 125 questions per dataset; pipeline described in earlier passages
+C24,Edge baseline SS: top chunks into 8k context window,23,graph-rag.pdf,partial,Names vector RAG semantic search (SS) only; no top-k chunks or 8k window
+C24,Edge baseline SS: top chunks into 8k context window,27,graph-rag.pdf,partial,SS adds retrieved chunks until a token limit; the 8k figure is not in this passage
+C24,Edge baseline SS: top chunks into 8k context window,28,graph-rag.pdf,partial,8k window is stated for community summaries/answers and global answers; SS not mentioned
+C25,Edge baseline TS: map-reduce summarization over shuffled chunked text,23,graph-rag.pdf,partial,TS applies map-reduce directly to source texts; shuffled/chunked detail not stated
+C25,Edge baseline TS: map-reduce summarization over shuffled chunked text,27,graph-rag.pdf,supported,TS = same map-reduce method with source texts shuffled and chunked
+C25,Edge baseline TS: map-reduce summarization over shuffled chunked text,29,graph-rag.pdf,partial,Table 2 and note on map-reduce summarization of source texts; no shuffled/chunked detail
+C26,Edge conditions C0-C3: hierarchical Leiden community levels,23,graph-rag.pdf,partial,Names C0-C3 graph community levels; no Leiden or root-to-low-level description
+C26,Edge conditions C0-C3: hierarchical Leiden community levels,27,graph-rag.pdf,partial,Defines C0-C3 from root-level to low-level community summaries; Leiden not in passage
+C26,Edge conditions C0-C3: hierarchical Leiden community levels,29,graph-rag.pdf,partial,Table 2 gives context units per C0-C3; no hierarchy or Leiden description
+C26,Edge conditions C0-C3: hierarchical Leiden community levels,30,graph-rag.pdf,partial,Hierarchical Leiden community detection; C0-C3 levels not mentioned
+C27,"Edge Exp1: LLM-as-judge head-to-head win rates, GPT-4, 5 runs",31,graph-rag.pdf,partial,LLM-as-a-judge with GPT-4; no 5 repeated runs
+C27,"Edge Exp1: LLM-as-judge head-to-head win rates, GPT-4, 5 runs",32,graph-rag.pdf,partial,Multiple replicates averaged; no GPT-4 or count of 5
+C27,"Edge Exp1: LLM-as-judge head-to-head win rates, GPT-4, 5 runs",33,graph-rag.pdf,partial,Reports the win rates; GPT-4 judge and 5 replicates not stated
+C28,Edge metric: comprehensiveness definition,34,graph-rag.pdf,supported,Comprehensiveness: how much detail covers all aspects of the question
+C28,Edge metric: comprehensiveness definition,35,graph-rag.pdf,supported,F.2 definition: thorough and complete without being redundant
+C29,Edge metric: diversity definition,34,graph-rag.pdf,supported,"Diversity: varied, rich, different perspectives and insights"
+C29,Edge metric: diversity definition,35,graph-rag.pdf,supported,"F.2 definition: multi-faceted, different viewpoints, sources and evidence"
+C30,Edge metric: empowerment definition,34,graph-rag.pdf,supported,Empowerment: helps reader understand and make informed judgements
+C30,Edge metric: empowerment definition,35,graph-rag.pdf,supported,F.2 definition includes reasoning and sources behind the claims
+C31,Edge metric: directness (control) definition,35,graph-rag.pdf,supported,"F.2 definition: specifically and clearly, concise, no unnecessary information"
+C31,Edge metric: directness (control) definition,36,graph-rag.pdf,supported,Directness evaluates concision; control criterion
+C32,Edge Exp2: comprehensiveness = avg unique claims via Claimify,37,graph-rag.pdf,partial,Claimify extracts unique claims (avg 31 per answer); the comprehensiveness metric is defined in the next passage
+C32,Edge Exp2: comprehensiveness = avg unique claims via Claimify,38,graph-rag.pdf,supported,Comprehensiveness measured as average number of claims extracted
+C32,Edge Exp2: comprehensiveness = avg unique claims via Claimify,39,graph-rag.pdf,supported,Table 3 average extracted claims; claim-based measure of comprehensiveness
+C33,Edge Exp2: diversity = agglomerative claim clusters at 1-ROUGE-L thresholds,38,graph-rag.pdf,supported,Clusters claims; agglomerative clustering with 1-ROUGE-L distance at several thresholds
+C33,Edge Exp2: diversity = agglomerative claim clusters at 1-ROUGE-L thresholds,40,graph-rag.pdf,supported,"Average number of clusters is the claim-based diversity measure, reported across distance thresholds"
+C33,Edge Exp2: diversity = agglomerative claim clusters at 1-ROUGE-L thresholds,41,graph-rag.pdf,partial,Table 4: average cluster counts at distance thresholds 0.5-0.8; agglomerative clustering and the 1-ROUGE-L distance are not in this passage (they are in passage 38). Second pass 2026-11-07: changed from supported.
+C34,Edge metric: token efficiency,29,graph-rag.pdf,supported,Table 2: context units and token counts; % of max
+C34,Edge metric: token efficiency,42,graph-rag.pdf,supported,Table 2 token counts; C3 needs 26-33% fewer and C0 over 97% fewer context tokens
+C35,"Edge headline: C0-C3 beat SS on comprehensiveness (72-83% podcasts, 72-80% news, p<0.001) and diversity (75-82%, 62-71%, p<0.01)",33,graph-rag.pdf,partial,"Same figures, but the paper attributes 72-83% to 'global approaches' (includes TS), not to C0-C3 only"
+C35,"Edge headline: C0-C3 beat SS on comprehensiveness (72-83% podcasts, 72-80% news, p<0.001) and diversity (75-82%, 62-71%, p<0.01)",43,graph-rag.pdf,partial,"Appendix G win rates reproduce the figures, but 83% is TS vs SS; C0-C3 vs SS on podcasts are 72-79%"
+C36,Edge headline: claims 31.6-34.2 vs 25.2-26.5 and more clusters,39,graph-rag.pdf,partial,Table 3 supports 31.6-34.2 vs 25.2-26.5 claims; cluster counts not in passage
+C36,Edge headline: claims 31.6-34.2 vs 25.2-26.5 and more clusters,40,graph-rag.pdf,partial,"Podcast: all global conditions significantly more diverse; News: only C0 significant at all thresholds, C1-C3 only at some, so 'significantly more clusters' overstates"
+C36,Edge headline: claims 31.6-34.2 vs 25.2-26.5 and more clusters,41,graph-rag.pdf,partial,Table 4 shows higher cluster counts for C0-C3 than SS but no significance
+C37,Edge headline: vector RAG wins on directness,33,graph-rag.pdf,supported,Vector RAG most direct across all comparisons
+C37,Edge headline: vector RAG wins on directness,36,graph-rag.pdf,partial,Defines directness as a control criterion; reports no results
+C37,Edge headline: vector RAG wins on directness,44,graph-rag.pdf,partial,Directness figure values only; the caption does not state that vector RAG wins directness
+C38,Edge headline: C0 needs >97% fewer context tokens than TS,29,graph-rag.pdf,partial,Table 2 gives C0 at 2.6% and 2.3% of TS tokens; 'competitive comprehensiveness and diversity' not stated here
+C38,Edge headline: C0 needs >97% fewer context tokens than TS,42,graph-rag.pdf,supported,"C0 needs over 97% fewer tokens; modest drop vs other global methods, still beats vector RAG"
+C39,"Table: Lewis tasks = fact lookup, short-span QA, generation, classification",3,rag-paper.pdf,partial,"Broad statement on knowledge-intensive tasks; QA, generation, FEVER mentioned"
+C39,"Table: Lewis tasks = fact lookup, short-span QA, generation, classification",4,rag-paper.pdf,partial,Open-domain QA only
+C39,"Table: Lewis tasks = fact lookup, short-span QA, generation, classification",8,rag-paper.pdf,partial,FEVER classification only
+C40,"Table: Edge tasks = global sensemaking, QFS",21,graph-rag.pdf,supported,Abstract: RAG fails on global questions; QFS task
+C40,"Table: Edge tasks = global sensemaking, QFS",24,graph-rag.pdf,partial,"Global sensemaking evaluation, high-level corpus understanding; QFS not named"
+C40,"Table: Edge tasks = global sensemaking, QFS",45,graph-rag.pdf,partial,Vector RAG does not support sensemaking queries over the whole dataset; QFS not named
+C41,Table: Lewis corpus = 21M Wikipedia passages (~2B words),2,rag-paper.pdf,supported,21M docs of 100 words; ~2B words follows arithmetically
+C41,Table: Lewis corpus = 21M Wikipedia passages (~2B words),17,rag-paper.pdf,partial,Index has 21M vectors; no ~2B words and not the Wikipedia dump description
+C42,"Table: Edge corpora ~1.0-1.7M tokens (podcasts, news)",22,graph-rag.pdf,partial,Podcast ~1M tokens only; no private/specialised wording
+C42,"Table: Edge corpora ~1.0-1.7M tokens (podcasts, news)",23,graph-rag.pdf,partial,News ~1.7M tokens only
+C43,Table: Lewis eval standard = objective gold targets,4,rag-paper.pdf,partial,EM only
+C43,Table: Lewis eval standard = objective gold targets,7,rag-paper.pdf,partial,Q-BLEU-1 plus human evaluation; not purely objective gold targets
+C43,Table: Lewis eval standard = objective gold targets,8,rag-paper.pdf,partial,Label accuracy only
+C44,Table: Edge eval standard = LLM-judge win rates + claim clustering,26,graph-rag.pdf,partial,LLM evaluator head-to-head comparison; claim clustering not here
+C44,Table: Edge eval standard = LLM-judge win rates + claim clustering,31,graph-rag.pdf,partial,LLM-as-a-judge with no ground truth; claim clustering not here
+C44,Table: Edge eval standard = LLM-judge win rates + claim clustering,38,graph-rag.pdf,partial,Claim clustering only; no LLM-judge win rates
+C45,"Table: Lewis baselines = T5, BART, REALM, DPR",4,rag-paper.pdf,partial,Closed-book and extractive paradigms; no BART or named models
+C45,"Table: Lewis baselines = T5, BART, REALM, DPR",9,rag-paper.pdf,partial,"BART is the generator here, not a baseline"
+C45,"Table: Lewis baselines = T5, BART, REALM, DPR",11,rag-paper.pdf,partial,"Names REALM, T5+SSM and DPR; BART not mentioned"
+C46,Table: Edge baselines = SS and TS,23,graph-rag.pdf,supported,Defines TS (map-reduce on source text) and SS (vector RAG)
+C46,Table: Edge baselines = SS and TS,27,graph-rag.pdf,supported,Defines SS (vector RAG) and TS (map-reduce over source texts)
+C47,Table: Lewis architecture = 626M-param BART + DPR bi-encoder,46,rag-paper.pdf,partial,RAG combines BART with a DPR retriever and dense Wikipedia index; no 626M figure
+C47,Table: Lewis architecture = 626M-param BART + DPR bi-encoder,47,rag-paper.pdf,partial,Joint training of retriever and generator; parameter count not here
+C47,Table: Lewis architecture = 626M-param BART + DPR bi-encoder,48,rag-paper.pdf,supported,110M x 2 BERT encoders + 406M BART-large = 626M
+C48,Table: Edge architecture = multi-stage indexing + map-reduce over GPT-4-turbo,28,graph-rag.pdf,partial,Graph indexing with gpt-4-turbo and Leiden; no multi-stage/map-reduce or 'frozen' wording
+C48,Table: Edge architecture = multi-stage indexing + map-reduce over GPT-4-turbo,49,graph-rag.pdf,supported,"LLM builds knowledge graph, hierarchy of communities and summaries, then map-reduce over community summaries"
+C49,Lewis queries target specific entities/spans/facts (e.g. President of Peru),4,rag-paper.pdf,partial,Extractive spans and QA datasets; no Peru example
+C49,Lewis queries target specific entities/spans/facts (e.g. President of Peru),20,rag-paper.pdf,partial,Contains the 'Who is the President of Peru?' example (index hot-swap probe) only
+C49,Lewis queries target specific entities/spans/facts (e.g. President of Peru),50,rag-paper.pdf,partial,Jeopardy = guess an entity from a precise factual statement; no Peru example or span-based QA
+C50,Edge: HotPotQA-style benchmarks test fact retrieval not global sensemaking; info spread over hundreds of docs,21,graph-rag.pdf,partial,Abstract: RAG fails on global questions such as main themes; no HotPotQA or 'hundreds of documents'
+C50,Edge: HotPotQA-style benchmarks test fact retrieval not global sensemaking; info spread over hundreds of docs,45,graph-rag.pdf,partial,"Vector RAG suits localised queries and does not support sensemaking; no benchmarks, HotPotQA or hundreds of documents"
+C50,Edge: HotPotQA-style benchmarks test fact retrieval not global sensemaking; info spread over hundreds of docs,51,graph-rag.pdf,supported,"HotPotQA, MultiHop-RAG and MT-Bench are oriented to explicit fact retrieval, not global sensemaking"
+C51,"Lewis results rely on EM, BLEU/ROUGE, classification accuracy vs gold",4,rag-paper.pdf,partial,EM only
+C51,"Lewis results rely on EM, BLEU/ROUGE, classification accuracy vs gold",7,rag-paper.pdf,partial,Q-BLEU-1 and human pairwise evals; shows Lewis also used human judgement
+C51,"Lewis results rely on EM, BLEU/ROUGE, classification accuracy vs gold",8,rag-paper.pdf,partial,Label accuracy only
+C52,Edge: global sensemaking questions lack gold-standard answers,26,graph-rag.pdf,supported,Notes the lack of gold standard answers for sensemaking questions
+C52,Edge: global sensemaking questions lack gold-standard answers,52,graph-rag.pdf,supported,"Lacking a gold standard, relative performance is judged by LLM-as-a-judge"
+C53,Edge eval relies on LLM win rates (Comp/Div/Emp) + claim clustering,34,graph-rag.pdf,partial,"Lists Comprehensiveness, Diversity and Empowerment as LLM-evaluator measures; claim clustering not here"
+C53,Edge eval relies on LLM win rates (Comp/Div/Emp) + claim clustering,38,graph-rag.pdf,partial,Claim clustering only; win-rate criteria not in passage
+C53,Edge eval relies on LLM win rates (Comp/Div/Emp) + claim clustering,52,graph-rag.pdf,partial,Comparative LLM-as-a-judge plus claim-based validation; no Comprehensiveness/Diversity/Empowerment or clustering
+C54,Lewis evaluate over all of Wikipedia (21M chunks),2,rag-paper.pdf,supported,"Single Wikipedia dump, 21M documents"
+C54,Lewis evaluate over all of Wikipedia (21M chunks),17,rag-paper.pdf,partial,21M vectors in the non-parametric index; not 'all of Wikipedia' or disjoint chunks
+C55,Edge evaluate closed corpora ~1-1.7M tokens,22,graph-rag.pdf,partial,Podcast corpus ~1M tokens only
+C55,Edge evaluate closed corpora ~1-1.7M tokens,23,graph-rag.pdf,partial,News corpus ~1.7M tokens only
+C56,Similarity search over 21M entries differs from KG over 1M-token private dataset,2,rag-paper.pdf,partial,Gives 21M-chunk scale only; density/distractor comparison is the model's inference
+C56,Similarity search over 21M entries differs from KG over 1M-token private dataset,22,graph-rag.pdf,partial,1M-token dataset described; 'private' and density/topology comparison are not in the passage
+C56,Similarity search over 21M entries differs from KG over 1M-token private dataset,53,graph-rag.pdf,partial,Knowledge-graph nodes and edges only; no dataset size or density comparison
+C57,"Lewis trainable hybrid BART-large + DPR, 626M params, backprop on marginal log-likelihood",46,rag-paper.pdf,partial,"End-to-end model, marginalising latent documents; no 626M or BART-large specifics"
+C57,"Lewis trainable hybrid BART-large + DPR, 626M params, backprop on marginal log-likelihood",47,rag-paper.pdf,partial,Negative marginal log-likelihood with SGD/Adam; only query encoder and BART fine-tuned; 626M not here
+C57,"Lewis trainable hybrid BART-large + DPR, 626M params, backprop on marginal log-likelihood",48,rag-paper.pdf,partial,"626M includes the document encoder (110M) that is not trained; query encoder + BART-large alone is about 516M, so the stated composition is wrong"
+C58,"Edge orchestration pipeline: GPT-4-turbo, extraction, Leiden, map-reduce",28,graph-rag.pdf,partial,"gpt-4-turbo, Leiden and prompts; no structured extraction or map-reduce"
+C58,"Edge orchestration pipeline: GPT-4-turbo, extraction, Leiden, map-reduce",49,graph-rag.pdf,partial,"Graph construction, community hierarchy and map-reduce; no Leiden or GPT-4-turbo"
+C58,"Edge orchestration pipeline: GPT-4-turbo, extraction, Leiden, map-reduce",54,graph-rag.pdf,partial,"LLM-derived graph index, Leiden and query-focused summarization; no GPT-4-turbo or map-reduce"
+C60,Documented: Lewis RAG-Seq 44.5 EM NQ beats T5-11B and DPR; humans prefer RAG 42.7 vs 7.1,10,rag-paper.pdf,partial,Supports 44.5 EM and beating T5-11B/DPR; not the 42.7% vs 7.1% preference
+C60,Documented: Lewis RAG-Seq 44.5 EM NQ beats T5-11B and DPR; humans prefer RAG 42.7 vs 7.1,15,rag-paper.pdf,partial,Gives 42.7% vs 7.1% factuality (452 pairs); 44.5 EM and the T5-11B/DPR comparison are in the table passage
+C61,Documented: Edge 72-83% win rates comprehensiveness; vector RAG wins directness,33,graph-rag.pdf,partial,Same: 72-83% is for global approaches including TS; vector RAG wins directness is stated
+C61,Documented: Edge 72-83% win rates comprehensiveness; vector RAG wins directness,44,graph-rag.pdf,partial,Caption: all GraphRAG conditions beat naive RAG on comprehensiveness and diversity; win rates only as raw figure numbers
+C62,Documented: Edge criticise QA benchmarks; global sensemaking lacks gold answers,26,graph-rag.pdf,partial,States the lack of gold-standard answers; no criticism of QA benchmarks
+C62,Documented: Edge criticise QA benchmarks; global sensemaking lacks gold answers,51,graph-rag.pdf,partial,Benchmarks evaluate explicit fact retrieval; lack of gold-standard answers is not in this passage
+C63,"Inference: directness penalises long overviews, so GraphRAG would score poorly on EM tasks",36,graph-rag.pdf,supported,Directness measures concision and is opposed to comprehensiveness; the EM-task conclusion is the model's own inference
+C63,"Inference: directness penalises long overviews, so GraphRAG would score poorly on EM tasks",55,graph-rag.pdf,supported,Judge example where naive RAG wins Directness over a more comprehensive answer; EM-task conclusion is inference
+C64,Inference: Lewis DPR retriever sub-linear retrieval via MIPS/HNSW,1,rag-paper.pdf,supported,MIPS solvable approximately in sub-linear time
+C64,Inference: Lewis DPR retriever sub-linear retrieval via MIPS/HNSW,2,rag-paper.pdf,partial,HNSW for fast retrieval; no sub-linear statement
+C65,Inference: GraphRAG indexing 281 min for ~1M tokens GPT-4-turbo; different niches,28,graph-rag.pdf,supported,Indexing took 281 minutes for the Podcast dataset using gpt-4-turbo (the ~1M tokens is from the podcast passage); niche comparison is inference

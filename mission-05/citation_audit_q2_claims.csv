@@ -1,0 +1,66 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,"Lewis corpus: Dec 2018 Wikipedia dump, 21M disjoint 100-word chunks, FAISS MIPS + HNSW",1 2,S,supported,At least one cited passage fully supports it
+C02,"Lewis benchmarks open-domain QA: NQ, TQA, WQ, CT",3 4,S,supported,At least one cited passage fully supports it
+C03,Lewis abstractive QA MS-MARCO NLG v2.1 without gold passages,5 6,S,supported,At least one cited passage fully supports it
+C04,Lewis Jeopardy question generation using SearchQA splits,3 7,S,supported,At least one cited passage fully supports it
+C05,Lewis FEVER 3-way and 2-way classification,3 8,S,supported,At least one cited passage fully supports it
+C06,"Lewis closed-book baselines T5-11B, T5-11B+SSM, fine-tuned BART-large",4 9 10,S,supported,At least one cited passage fully supports it
+C07,Lewis open-book baselines REALM and DPR (cross-encoder reranker + extractive reader),1 4 10 11,S,supported,At least one cited passage fully supports it
+C08,"Lewis task-specific pipelines with gold supervision (FEVER Zhong, Thorne&Vlachos; MS-MARCO SOTA PALM)",8 10 12,no single badge,partial,Zhong et al. and PALM are not named in any cited passage; Thorne and Vlachos and gold-evidence supervision are
+C09,Lewis retriever ablations: frozen DPR and BM25,13 14,S,supported,At least one cited passage fully supports it
+C10,Lewis metric: EM for open-domain QA,4,S,supported,At least one cited passage fully supports it
+C11,Lewis metrics: BLEU-1 and ROUGE-L for MS-MARCO,6 10,S,supported,At least one cited passage fully supports it
+C12,"Lewis metrics: Q-BLEU-1, BLEU-1, pairwise human eval (factuality, specificity) for Jeopardy",7 10 14 15,S,supported,At least one cited passage fully supports it
+C13,Lewis metric: generation diversity = distinct/total tri-grams,14 16,S,supported,At least one cited passage fully supports it
+C14,Lewis metric: FEVER classification accuracy,8 10,S,supported,At least one cited passage fully supports it
+C15,"Lewis headline: RAG-Seq 44.5 NQ, 45.2 WQ, 52.2 CT, 68.0 TQA; beats T5-11B, REALM, DPR",3 10 17,S,supported,At least one cited passage fully supports it
+C16,Lewis headline: beats BART on MS-MARCO (+2.6 BLEU-1/ROUGE-L) and Jeopardy (22.2 vs 19.7 Q-BLEU-1),6 10 15,S,supported,At least one cited passage fully supports it
+C17,"Lewis headline: human eval factuality 42.7% vs 7.1%, higher tri-gram diversity",14 15,S,supported,At least one cited passage fully supports it
+C18,Lewis headline: FEVER 3-way within 4.3% of pipelines needing gold evidence,3 18,S,supported,At least one cited passage fully supports it
+C19,"Lewis headline: index hot-swap 2018->2016, 68% -> 70%",19 20,no single badge,supported,"Figures supported (70% with 2016 index for 2016 leaders, 68% with 2018 index for 2018 leaders); 'shifting from 68% to 70%' is a loose description of two matched-index accuracies"
+C20,"Edge corpora: two ~1M-token corpora, 600-token chunks, 100-token overlap",21 22 23,S,supported,At least one cited passage fully supports it
+C21,"Edge podcast: Kevin Scott Behind the Tech, 1,669 chunks, ~1M tokens",22 23,S,supported,At least one cited passage fully supports it
+C22,"Edge news: MultiHop-RAG, Sep 2013-Dec 2023, 3,197 chunks, ~1.7M tokens",23,S,supported,At least one cited passage fully supports it
+C23,"Edge: 125 test questions per dataset, LLM personas/tasks/questions",24 25 26,no single badge,supported,At least one cited passage fully supports it
+C24,Edge baseline SS: top chunks into 8k context window,23 27 28,no single badge,partial,"Token-limited retrieval is supported; the 8k window is stated for community summaries and answers, not specifically for SS"
+C25,Edge baseline TS: map-reduce summarization over shuffled chunked text,23 27 29,S,supported,At least one cited passage fully supports it
+C26,Edge conditions C0-C3: hierarchical Leiden community levels,23 27 29 30,no single badge,supported,At least one cited passage fully supports it
+C27,"Edge Exp1: LLM-as-judge head-to-head win rates, GPT-4, 5 runs",31 32 33,no single badge,partial,"GPT-4 judge and replicates are supported; '5 repeated runs' appears only in the Figure 2 caption (passage 44), which this claim does not cite"
+C28,Edge metric: comprehensiveness definition,34 35,S,supported,At least one cited passage fully supports it
+C29,Edge metric: diversity definition,34 35,S,supported,At least one cited passage fully supports it
+C30,Edge metric: empowerment definition,34 35,S,supported,At least one cited passage fully supports it
+C31,Edge metric: directness (control) definition,35 36,S,supported,At least one cited passage fully supports it
+C32,Edge Exp2: comprehensiveness = avg unique claims via Claimify,37 38 39,S,supported,At least one cited passage fully supports it
+C33,Edge Exp2: diversity = agglomerative claim clusters at 1-ROUGE-L thresholds,38 40 41,S,supported,At least one cited passage fully supports it
+C34,Edge metric: token efficiency,29 42,S,supported,At least one cited passage fully supports it
+C35,"Edge headline: C0-C3 beat SS on comprehensiveness (72-83% podcasts, 72-80% news, p<0.001) and diversity (75-82%, 62-71%, p<0.01)",33 43,no single badge,partial,"Figures reproduced, but the 83% top of the range is TS vs SS; C0-C3 vs SS on podcasts are 72-79%"
+C36,Edge headline: claims 31.6-34.2 vs 25.2-26.5 and more clusters,39 40 41,no single badge,partial,Claim counts supported; 'significantly more claim clusters across thresholds' holds for Podcast but on News only C0 is significant at all thresholds
+C37,Edge headline: vector RAG wins on directness,33 36 44,S,supported,At least one cited passage fully supports it
+C38,Edge headline: C0 needs >97% fewer context tokens than TS,29 42,S,supported,At least one cited passage fully supports it
+C39,"Table: Lewis tasks = fact lookup, short-span QA, generation, classification",3 4 8,no single badge,supported,At least one cited passage fully supports it
+C40,"Table: Edge tasks = global sensemaking, QFS",21 24 45,S,supported,At least one cited passage fully supports it
+C41,Table: Lewis corpus = 21M Wikipedia passages (~2B words),2 17,S,supported,At least one cited passage fully supports it
+C42,"Table: Edge corpora ~1.0-1.7M tokens (podcasts, news)",22 23,no single badge,supported,At least one cited passage fully supports it
+C43,Table: Lewis eval standard = objective gold targets,4 7 8,no single badge,partial,"EM, Q-BLEU and label accuracy supported, but the cited passage 7 also shows Lewis used human pairwise evaluation, so 'objective gold targets' omits that"
+C44,Table: Edge eval standard = LLM-judge win rates + claim clustering,26 31 38,no single badge,supported,At least one cited passage fully supports it
+C45,"Table: Lewis baselines = T5, BART, REALM, DPR",4 9 11,no single badge,partial,"T5, REALM and DPR as baselines supported; BART as a baseline is not shown (BART appears only as the generator in the cited passages)"
+C46,Table: Edge baselines = SS and TS,23 27,S,supported,At least one cited passage fully supports it
+C47,Table: Lewis architecture = 626M-param BART + DPR bi-encoder,46 47 48,S,supported,At least one cited passage fully supports it
+C48,Table: Edge architecture = multi-stage indexing + map-reduce over GPT-4-turbo,28 49,S,supported,At least one cited passage fully supports it
+C49,Lewis queries target specific entities/spans/facts (e.g. President of Peru),4 20 50,no single badge,supported,At least one cited passage fully supports it
+C50,Edge: HotPotQA-style benchmarks test fact retrieval not global sensemaking; info spread over hundreds of docs,21 45 51,S,supported,At least one cited passage fully supports it
+C51,"Lewis results rely on EM, BLEU/ROUGE, classification accuracy vs gold",4 7 8,no single badge,partial,Same omission as C43: cited passage 7 shows human evaluation alongside Q-BLEU
+C52,Edge: global sensemaking questions lack gold-standard answers,26 52,S,supported,At least one cited passage fully supports it
+C53,Edge eval relies on LLM win rates (Comp/Div/Emp) + claim clustering,34 38 52,no single badge,supported,At least one cited passage fully supports it
+C54,Lewis evaluate over all of Wikipedia (21M chunks),2 17,S,supported,At least one cited passage fully supports it
+C55,Edge evaluate closed corpora ~1-1.7M tokens,22 23,no single badge,supported,At least one cited passage fully supports it
+C56,Similarity search over 21M entries differs from KG over 1M-token private dataset,2 22 53,no single badge,partial,Scale facts supported; the density/distractor/topology comparison is the model's inference
+C57,"Lewis trainable hybrid BART-large + DPR, 626M params, backprop on marginal log-likelihood",46 47 48,no single badge,partial,"626M total is supported, but it includes the 110M document encoder that is not trained; query encoder + BART-large alone is about 516M, so the stated composition is wrong"
+C58,"Edge orchestration pipeline: GPT-4-turbo, extraction, Leiden, map-reduce",28 49 54,no single badge,supported,At least one cited passage fully supports it
+C59,Inference: comparing EM with win rates would conflate weights with prompting (NO CITATION),,,uncited,Inference sentence with no badge
+C60,Documented: Lewis RAG-Seq 44.5 EM NQ beats T5-11B and DPR; humans prefer RAG 42.7 vs 7.1,10 15,no single badge,supported,At least one cited passage fully supports it
+C61,Documented: Edge 72-83% win rates comprehensiveness; vector RAG wins directness,33 44,no single badge,partial,Same as C35: the 72-83% range includes TS
+C62,Documented: Edge criticise QA benchmarks; global sensemaking lacks gold answers,26 51,no single badge,supported,At least one cited passage fully supports it
+C63,"Inference: directness penalises long overviews, so GraphRAG would score poorly on EM tasks",36 55,S,supported,At least one cited passage fully supports it
+C64,Inference: Lewis DPR retriever sub-linear retrieval via MIPS/HNSW,1 2,S,supported,At least one cited passage fully supports it
+C65,Inference: GraphRAG indexing 281 min for ~1M tokens GPT-4-turbo; different niches,28,S,supported,At least one cited passage fully supports it

@@ -1,0 +1,13 @@
+claim_id,claim,badge,source,verdict,note
+C01,Lewis: the knowledge source will probably never be entirely factual or free of bias,1,rag-paper.pdf,supported,States the knowledge source will probably never be entirely factual and devoid of bias
+C02,"Lewis: updating the document encoder was too costly, so it was kept frozen",2,rag-paper.pdf,supported,Updating BERTd is costly because the index must be refreshed; it is kept fixed and only the query encoder and BART are fine-tuned
+C03,Lewis: retrieval collapse on tasks such as story generation,3,rag-paper.pdf,supported,Retrieval collapse in story generation: same documents retrieved regardless of input
+C04,"Edge: evaluation limited to two ~1M-token datasets, needs validation on other domains",4,graph-rag.pdf,supported,Evaluation limited to two corpora of ~1M tokens; generalisation needs more work
+C05,Edge: Directness favoured vector RAG because GraphRAG answers are less concise (framed as a limitation),5,graph-rag.pdf,partial,Defines Directness as a control criterion opposed to comprehensiveness and diversity; reports no result
+C05,Edge: Directness favoured vector RAG because GraphRAG answers are less concise (framed as a limitation),6,graph-rag.pdf,partial,Vector RAG is the most direct in all comparisons; does not say GraphRAG answers are less concise
+C05,Edge: Directness favoured vector RAG because GraphRAG answers are less concise (framed as a limitation),7,graph-rag.pdf,partial,One judge example where naive RAG wins on concision and specificity
+C06,Inference-labelled: Lewis easy test-time updates via index hot-swapping vs GraphRAG maintenance overhead,8,rag-paper.pdf,supported,Non-parametric knowledge can be updated at test time by swapping the index
+C06,Inference-labelled: Lewis easy test-time updates via index hot-swapping vs GraphRAG maintenance overhead,9,rag-paper.pdf,supported,2016 vs 2018 index swap gives 70% and 68%; world knowledge updated by replacing the memory
+C07,Inference-labelled: GraphRAG indexing takes hours of LLM runtime per million tokens,10,graph-rag.pdf,supported,Graph indexing took 281 minutes for the Podcast dataset using gpt-4-turbo; the cost reading is inference
+C08,Inference-labelled: hierarchical summarisation could compound early extraction errors,11,graph-rag.pdf,supported,Lower-level community summaries are used to build higher-level ones
+C08,Inference-labelled: hierarchical summarisation could compound early extraction errors,12,graph-rag.pdf,partial,Larger chunks make the LLM extract fewer entities and self-reflection is used to catch misses; hallucinations are not mentioned

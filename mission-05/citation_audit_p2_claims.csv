@@ -1,0 +1,6 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,Edge et al. do not evaluate on MMLU and report no MMLU scores (the refusal itself),,,uncited,"Absence statement, so no passage can be cited for it. Verified by full-text search: 0 matches for MMLU in graph-rag.pdf and rag-paper.pdf"
+C02,"Edge et al.: standard QA benchmarks evaluate explicit, localised fact retrieval, not global sensemaking",1,S,supported,Supported by badge 1
+C03,Edge et al. evaluate exclusively on two ~1M-token datasets: podcast transcripts (Behind the Tech) and news articles (MultiHop-RAG),2 3,no single badge,supported,"Supported when badges 2 and 3 are read together; the name MultiHop-RAG itself rests on the Tang and Yang (2024) reference in badge 3, which badge 1 lists under that name"
+C04,"Edge et al.: LLM-as-a-judge win rates scored on Comprehensiveness, Diversity, Empowerment and Directness",4 5 6,no single badge,supported,"Supported when badges 4, 5 and 6 are read together"
+C05,Edge et al.: claim-based metrics using factual claim counts and agglomerative cluster counts,7 8 9 10,S,supported,"Supported by badge 8 alone; badges 7, 9 and 10 add detail"
