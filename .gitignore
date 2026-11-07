@@ -12,3 +12,6 @@ logs
 # Local Mission 3 benchmark data
 /mission-03/results/gqa_kvcache_results.csv
 /mission-03/results/gqa_kvcache_results.json
+
+# Files the Claude app saves into the repo (not part of the project)
+Claude outputs/
