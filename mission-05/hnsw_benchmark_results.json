@@ -1,0 +1,93 @@
+{
+  "config": {
+    "n": 5000,
+    "dim": 768,
+    "n_queries": 200,
+    "top_k": 10,
+    "M": 16,
+    "ef_construction": 100,
+    "ef_search": 64,
+    "seed": 42
+  },
+  "scaling": [
+    {
+      "N": 1000,
+      "hnsw_ms": 1.0468160035088658,
+      "flat_ms": 0.10079900384880602,
+      "speedup": 0.09629104208469652,
+      "recall_at_k": 1.0,
+      "dist_evals": 724.155,
+      "layers": 3,
+      "build_s": 3.4637325000949204
+    },
+    {
+      "N": 2500,
+      "hnsw_ms": 1.8960139818955213,
+      "flat_ms": 0.3768840164411813,
+      "speedup": 0.19877702381941045,
+      "recall_at_k": 0.9954999999999999,
+      "dist_evals": 1007.955,
+      "layers": 3,
+      "build_s": 11.141814700094983
+    },
+    {
+      "N": 5000,
+      "hnsw_ms": 2.2316640079952776,
+      "flat_ms": 0.7132785010617226,
+      "speedup": 0.3196173341982903,
+      "recall_at_k": 0.9890000000000001,
+      "dist_evals": 1196.245,
+      "layers": 4,
+      "build_s": 26.114492200082168
+    }
+  ],
+  "ef_sweep": [
+    {
+      "ef_search": 16,
+      "hnsw_ms": 0.8634204999543726,
+      "recall_at_k": 0.8120000000000002,
+      "dist_evals": 478.2
+    },
+    {
+      "ef_search": 32,
+      "hnsw_ms": 1.3747824938036501,
+      "recall_at_k": 0.9325000000000001,
+      "dist_evals": 741.215
+    },
+    {
+      "ef_search": 64,
+      "hnsw_ms": 2.299311001552269,
+      "recall_at_k": 0.9890000000000001,
+      "dist_evals": 1196.245
+    },
+    {
+      "ef_search": 128,
+      "hnsw_ms": 4.247381497407332,
+      "recall_at_k": 0.9984999999999999,
+      "dist_evals": 1888.35
+    },
+    {
+      "ef_search": 256,
+      "hnsw_ms": 5.425306506222114,
+      "recall_at_k": 1.0,
+      "dist_evals": 2792.52
+    }
+  ],
+  "layer_sizes": [
+    5000,
+    283,
+    18,
+    2
+  ],
+  "degree_stats": {
+    "layer0_mean_deg": 25.9206,
+    "layer0_max_deg": 32.0,
+    "layer1_mean_deg": 16.0,
+    "layer1_max_deg": 16.0,
+    "layer2_mean_deg": 16.0,
+    "layer2_max_deg": 16.0,
+    "layer3_mean_deg": 1.0,
+    "layer3_max_deg": 1.0
+  },
+  "build_seconds": 26.114492200082168
+}
