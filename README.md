@@ -7,7 +7,7 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 
 ## Team Members and Roles
 
-| Member | Missions 1–2 Role | Missions 3–5 Role |
+| Member | Missions 1–2 Role | Missions 3–7 Role |
 |---|---|---|
 | Abubaker Attique | Historical Archivist | Data & Payload Specialist |
 | Fatima Siddiqa | Protocol Specialist | Communications & Protocol Officer |
@@ -23,6 +23,8 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 | 03 | Multi-Head Attention, RoPE Vector Rotation & Grouped-Query KV-Cache Optimization | [Mission 3](mission-03/) |
 | 04 | Direct Preference Optimization (DPO), Verbosity Regularization & Steering Vector Control | [Mission 4](mission-04/) |
 | 05 | Dual-Path GraphRAG, Hybrid Search & The Google NotebookLM Grounding Lab | [Mission 5](mission-05/) |
+| 06 | The Autonomous Warp State Machine & Deliberation Loop | [Mission 6](mission-06/) |
+| 07 | Sagittarius A* — The Gravitational Search Horizon & Process Reward Evaluator | [Mission 7](mission-07/) |
 
 Each mission folder contains its own briefing and instructions.
 
@@ -50,7 +52,7 @@ The following general instructions are reproduced from the [instructor’s READM
 
 ## Mission Sign-offs
 
-Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Missions 4 and 5 are pending. Each officer confirms their own approval before submission.
+Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Missions 6 and 7 are awaiting sign-off. Each officer confirms their own approval before submission.
 
 ### Mission 01
 
@@ -87,6 +89,22 @@ Mission 1 approvals are preserved from the previous root README. Mission 2 boxes
 - [ ] Syeda Manahil Javed — Security & Ethics Sentinel
 - [X] Abdul Jalil Memon — Systems Architect / Lead Engineer
 
+### Mission 06
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 07
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
 ## Submission
 
 Submit the public team repository URL through the corresponding mission's **Mission → Transmit Solution** tab on the [course portal](https://dlearn-cai.web.app/) after completing the mission and obtaining all four required sign-offs.
+
+For **Mission 7**, also complete the squad documentation and upload **`mission-07-doc.pdf`** to the **Week 07 Assignment Drop-box in Moodle**, as required by the [Mission 7 submission instructions](mission-07/README.md).
