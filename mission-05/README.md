@@ -32,7 +32,7 @@ Before transmitting your team's repository link on the course website submission
 - [X] **Systems Architect (`01_HNSW_Vector_Index_starter.py`):** Pure Python/NumPy HNSW graph indexing, logarithmic skip-list traversal, and benchmark against brute-force flat search.
 - [X] **Communications & Protocol Officer (`02_BM25_and_RRF_Combiner_starter.py`):** Okapi BM25 lexical scorer and Reciprocal Rank Fusion ($k=60$) combiner merging dense & sparse candidate streams.
 - [X] **Data & Payload Specialist (`03_NotebookLM_Grounding_Lab_template.md`):** Google NotebookLM empirical laboratory: source-grounded citation extraction, negative constraint audit, and Audio Overview evaluation.
-- [ ] **Security & Ethics Sentinel (`04_Prompt_Injection_and_RAG_Audit_starter.py`):** Indirect prompt injection sanitizer and automated RAG Triad audit (Faithfulness, Answer Relevance, Context Recall).
+- [X] **Security & Ethics Sentinel (`04_Prompt_Injection_and_RAG_Audit_starter.py`):** Indirect prompt injection sanitizer and automated RAG Triad audit (Faithfulness, Answer Relevance, Context Recall).
 
 ---
 
