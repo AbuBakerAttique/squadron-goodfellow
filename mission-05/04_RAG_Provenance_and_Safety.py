@@ -1,31 +1,3 @@
-
-"""
-Mission 05 — Part 4: Security & Ethics Sentinel
-Indirect Prompt Injection Defense & RAG Triad Audit
-
-Starship Operational Unit: USSE Noosphere Bridge Crew
-Squadron: Goodfellow — Group 18
-Sector: SEC-05-M01 (Crab Pulsar Remnant / Messier 1)
-Subsystem 05: Dual-Path Associative Memory Core
-
-Deliverables:
-1. Indirect prompt injection detection
-2. Retrieved-context sanitization and quarantine
-3. Source provenance verification
-4. RAG Triad heuristic evaluation
-5. Claim-level attribution and JSON audit logs
-6. Automated security self-tests
-
-Usage:
-    python 04_RAG_Provenance_and_Safety.py --test
-    python 04_RAG_Provenance_and_Safety.py --demo
-    python 04_RAG_Provenance_and_Safety.py --demo --out security_audit.json
-
-Note:
-RAG Triad scores here are lexical heuristic proxies.
-They do not prove semantic entailment or factual correctness.
-"""
-
 import argparse
 import json
 import re
