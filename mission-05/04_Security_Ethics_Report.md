@@ -1,15 +1,3 @@
-
-# Mission 05 — Part 4: Security & Ethics Sentinel
-
-**Starship Operational Unit:** USSE Noosphere Bridge Crew  
-**Squadron:** Goodfellow — Group 18  
-**Sector:** SEC-05-M01 — Crab Pulsar Remnant  
-**Subsystem:** AURA Dual-Path Associative Memory Core  
-**Role:** Security & Ethics Sentinel  
-**Deliverable:** `04_RAG_Provenance_and_Safety.py`
-
----
-
 ## 1. Mission Objective
 
 The objective of the Security & Ethics Sentinel is to protect the AURA Retrieval-Augmented Generation (RAG) system from malicious instructions embedded in retrieved documents and evaluate the reliability of generated answers.
