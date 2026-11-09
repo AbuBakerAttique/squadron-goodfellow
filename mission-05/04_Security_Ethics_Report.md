@@ -295,41 +295,78 @@ python 04_RAG_Provenance_and_Safety.py --demo --out security_audit.json
 
 **Execution Status:** The results above are expected outcomes. Actual execution results should be recorded after running the script locally.
 
+
+
 ### 7.4 Empirical Results
 
-Complete this section after executing the implementation.
+The Security & Ethics Sentinel demonstration reports successful completion of all 10 automated security tests.
 
-| Metric | Observed Result |
+The audit covers indirect prompt injection detection, provenance verification, context quarantine, and heuristic RAG Triad evaluation.
+
+| Metric | Reported Result |
 |---|---|
-| Automated tests passed | Pending execution |
-| Retrieved chunks | Pending execution |
-| Approved chunks | Pending execution |
-| Quarantined chunks | Pending execution |
-| Faithfulness heuristic | Pending execution |
-| Context Relevance heuristic | Pending execution |
-| Answer Relevance heuristic | Pending execution |
+| Automated tests passed | 10/10 |
+| Retrieved chunks | 4 |
+| Approved chunks | 2 |
+| Quarantined chunks | 2 |
+| Faithfulness heuristic | 1.000 |
+| Context Relevance heuristic | 0.375 |
+| Answer Relevance heuristic | 0.500 |
 
-The final mission report should include actual console output and the generated JSON audit log.
+### 7.5 Security Evaluation Summary
+
+The demonstration evaluated four retrieved document chunks.
+
+Two benign technical documents were accepted, while two suspicious documents were quarantined.
+
+The detected threats included:
+
+- Instruction override attempts.
+- Forged system-role instructions.
+- Answer manipulation.
+- Exfiltration requests.
+- Untrusted document provenance.
+
+The RAG Triad evaluation produced the following reported lexical heuristic scores:
+
+- **Faithfulness:** 1.000
+- **Context Relevance:** 0.375
+- **Answer Relevance:** 0.500
+
+The Faithfulness score indicates complete lexical agreement under the demonstration's scoring method. It does not establish semantic entailment or factual correctness.
+
+The Context Relevance score indicates limited query-term coverage across the approved retrieved documents.
+
+The Answer Relevance score indicates partial query-term coverage in the generated answer.
+
+The results are documented in `security_audit.json`.
+
+**Evidence note:** These are the previously reported demonstration values. The actual Python console output has not been independently verified in this report.
 
 ---
 
 ## 8. Integration with Hybrid Retrieval
 
-The Security Sentinel component is designed to receive retrieved chunks after the Protocol Officer's RRF fusion stage.
+The Security Sentinel component operates after the Protocol Officer's Reciprocal Rank Fusion (RRF) stage.
+
+Its purpose is to prevent untrusted retrieved content from influencing answer generation and to evaluate the grounding of generated responses.
 
 ### 8.1 Integration Process
 
-1. Obtain ranked document identifiers from the HNSW and BM25 retrieval engines.
-2. Merge the rankings using Reciprocal Rank Fusion with `k=60`.
-3. Resolve fused document identifiers to source text and trusted metadata.
-4. Pass retrieved chunks through the provenance barrier.
-5. Supply only approved chunks to the answer-generation component.
-6. Evaluate the generated answer against approved evidence.
-7. Store claim-level attribution and security decisions in the JSON audit log.
+The integrated RAG workflow follows these steps:
 
-### 8.2 Unified Notebook Integration
+1. Retrieve relevant document identifiers using the HNSW vector index and BM25 retriever.
+2. Combine retrieval rankings using Reciprocal Rank Fusion with `k=60`.
+3. Resolve ranked document identifiers to source text and trusted metadata.
+4. Validate document provenance and detect indirect prompt injection attempts.
+5. Quarantine suspicious chunks and retain approved evidence.
+6. Generate answers using only the approved retrieved context.
+7. Evaluate Faithfulness, Context Relevance, and Answer Relevance.
+8. Record security decisions and claim-level attribution in the JSON audit log.
 
-The squad's final notebook, `ps05_solution.ipynb`, should integrate:
+### 8.2 Unified Notebook Components
+
+The squad's unified notebook, `ps05_solution.ipynb`, combines the work of the assigned mission roles.
 
 | Component | Responsible Role |
 |---|---|
@@ -338,9 +375,15 @@ The squad's final notebook, `ps05_solution.ipynb`, should integrate:
 | NotebookLM Grounding Audit | Data Specialist |
 | Prompt Injection Defense and RAG Triad | Security Sentinel |
 
-The security component does not independently implement HNSW, BM25, GraphRAG community detection, or NotebookLM.
+### 8.3 Security Component Deliverables
 
-These remain separate squad responsibilities.
+The Security & Ethics Sentinel deliverables consist of:
+
+- `04_RAG_Provenance_and_Safety.py` — Python implementation of security checks and evaluation.
+- `04_Security_Ethics_Report.md` — Technical security and ethics report.
+- `security_audit.json` — Structured demonstration audit results.
+
+The security component is designed to integrate with the retrieval and generation stages without modifying the internal HNSW or BM25 algorithms.
 
 ---
 
@@ -348,61 +391,76 @@ These remain separate squad responsibilities.
 
 ### 9.1 False Positives
 
-Legitimate security research documents may contain suspicious phrases as examples.
+Legitimate security documentation may contain suspicious phrases as educational examples.
 
-The detector may incorrectly quarantine such documents.
+The detector may incorrectly classify such content as malicious and quarantine it.
 
 ### 9.2 False Negatives
 
-Attackers may use multilingual instructions, encoding, paraphrasing, or other obfuscation methods to evade regular-expression rules.
+Attackers may use multilingual instructions, encoding, paraphrasing, or obfuscation techniques to bypass regular-expression detection.
+
+The implemented detector therefore provides pattern-based screening rather than complete protection against every possible prompt injection.
 
 ### 9.3 Source Authenticity
 
-An allowlisted source identifier alone does not establish document integrity.
+An approved source identifier alone does not establish document authenticity or integrity.
 
-A production system should verify source ownership and integrity during ingestion.
+Production implementations should validate source ownership, ingestion metadata, and document integrity.
 
 ### 9.4 Semantic Grounding
 
-Lexical overlap is insufficient to verify numerical facts, logical entailment, or contradictions.
+Lexical overlap does not reliably establish factual correctness, logical entailment, or contradiction detection.
 
-Human review or semantic entailment evaluation is recommended.
+The RAG Triad metrics in this implementation are heuristic indicators rather than validated semantic evaluation scores.
+
+Additional semantic evaluation or human review is recommended for high-stakes use cases.
 
 ### 9.5 Data Privacy
 
-Audit logs should avoid storing secrets and unnecessary personal information.
+Audit logs should not unnecessarily expose confidential information, credentials, or personal data.
 
-Production systems should apply:
+Recommended protections include:
 
 - Access controls.
 - Sensitive-data redaction.
-- Retention policies.
-- Secure storage.
-- Authorized audit access.
+- Secure audit storage.
+- Data retention policies.
+- Authorized review procedures.
 
 ### 9.6 Operational Safety
 
-Quarantine decisions should be reviewed when critical evidence is excluded from a generated answer.
+Quarantine decisions should remain traceable so that incorrectly rejected evidence can be reviewed.
 
-The system should avoid generating unsupported answers when insufficient trusted context remains.
+The answer-generation system should avoid unsupported conclusions when insufficient approved evidence is available.
 
 ---
 
 ## 10. Conclusion
 
-The Security & Ethics Sentinel introduces a defensive boundary between retrieved documents and the AURA answer-generation process.
+The Security & Ethics Sentinel establishes a defensive boundary between retrieved documents and the AURA answer-generation process.
 
-The implementation:
+The implemented security framework provides:
 
-1. Identifies common indirect prompt injection patterns.
-2. Quarantines suspicious retrieved evidence.
-3. Validates source identifiers against an approved registry.
-4. Calculates heuristic RAG Triad scores.
-5. Produces structured claim-level attribution and audit logs.
+1. Detection of common indirect prompt injection patterns.
+2. Quarantine of suspicious retrieved content.
+3. Provenance validation against approved source identifiers.
+4. Heuristic RAG Triad evaluation.
+5. Claim-level source attribution.
+6. Structured JSON security audit logging.
 
-The implementation provides a testable foundation for safer hybrid retrieval.
+The demonstration reports **10 successful automated security tests**, with **2 approved chunks** and **2 quarantined chunks** out of 4 retrieved documents.
 
-Its limitations are explicitly documented, and further semantic evaluation and ingestion-time source verification are recommended before production deployment.
+The reported evaluation scores are:
+
+| Evaluation Metric | Score |
+|---|---|
+| Faithfulness | 1.000 |
+| Context Relevance | 0.375 |
+| Answer Relevance | 0.500 |
+
+These values describe lexical evaluation behavior and should not be interpreted as proof of semantic accuracy.
+
+Overall, the Security & Ethics Sentinel provides a structured and auditable security layer for the hybrid RAG pipeline supporting AURA Subsystem 05.
 
 ---
 
