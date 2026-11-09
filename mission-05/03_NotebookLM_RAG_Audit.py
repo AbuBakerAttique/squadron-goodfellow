@@ -28,8 +28,19 @@ reported two ways:
     strict   only "supported" badges count as entailed (headline figure)
     lenient  "supported" plus "partial" badges count
 
-It also summarises the claim-level files, the three epistemic-refusal probes and
-the Audio Overview scores. Standard library only.
+It also summarises the claim-level files, the epistemic-refusal probes and the
+Audio Overview scores. Standard library only.
+
+Two runs are kept apart, because the notebook changed between them:
+
+    Run 1 (2026-11-07)  Documents A and B only: queries Q1-Q5, probes P1-P3
+    Run 2 (2026-11-09)  Documents A, B and C (the professor's Document C was
+                        added to the notebook): queries Q6-Q7, probes P1-P3
+                        again plus four absent topics from Document C's manifest
+
+The Audio Overview belongs to Run 1 (it was generated from Documents A and B).
+The "combined" figures add the Q1-Q7 badges together; they mix two notebook
+states, so read them with the per-run figures.
 
 Usage
 -----
@@ -41,10 +52,12 @@ Usage
 
 Input files (same folder as this script)
 ----------------------------------------
-    citation_audit_q1.csv .. citation_audit_q5.csv   one row per badge
-    citation_audit_q2_claims.csv .. _q5_claims.csv   one row per assertion
-    citation_audit_p2.csv                            badges inside probe P2
-    refusal_probes.csv                               one row per probe
+    citation_audit_q1.csv .. citation_audit_q7.csv   one row per badge
+    citation_audit_q2_claims.csv .. _q7_claims.csv   one row per assertion
+    citation_audit_p2.csv                            badges inside probe P2 (run 1)
+    refusal_probes.csv                               one row per probe (run 1)
+    citation_audit_probes_run2.csv                   badges inside probes M1-M3 (run 2)
+    refusal_probes_run2.csv                          one row per probe (run 2)
 
 Limits: verdicts were assigned by Claude (an AI assistant) and are subject to
 the author's spot-check; a badge audit tests whether the cited passage supports
@@ -61,7 +74,8 @@ from typing import Dict, List, Optional
 
 HERE = Path(__file__).resolve().parent
 
-QUERIES = ["q1", "q2", "q3", "q4", "q5"]
+QUERIES = ["q1", "q2", "q3", "q4", "q5"]   # run 1: Documents A and B
+RUN2_QUERIES = ["q6", "q7"]                 # run 2: Documents A, B and C
 SUPPORTED, PARTIAL, UNSUPPORTED = "supported", "partial", "unsupported"
 BADGE_VERDICTS = (SUPPORTED, PARTIAL, UNSUPPORTED)
 CLAIM_VERDICTS = (SUPPORTED, PARTIAL, UNSUPPORTED, "uncited")
@@ -75,6 +89,12 @@ LAB_FILE_TOTALS = {
     "q4": (0, 0, 0, 0),
     "q5": (9, 3, 6, 0),
     "all": (262, 123, 137, 2),
+    # run 2 (Documents A, B and C)
+    "q6": (7, 2, 5, 0),
+    "q7": (17, 6, 11, 0),
+    "run2": (24, 8, 16, 0),
+    "combined": (286, 131, 153, 2),
+    "probe_badges_run2": (7, 6, 1, 0),
 }
 
 # Audio Overview scores, copied from Section 3 of the lab file (scored from the
@@ -191,6 +211,23 @@ def run_audit() -> Dict[str, object]:
     probes = read_csv("refusal_probes.csv")
     p2_rows = read_csv("citation_audit_p2.csv")
 
+    # Run 2: Documents A, B and C
+    run2_queries: Dict[str, Dict[str, object]] = {}
+    run2_claims: Dict[str, Dict[str, object]] = {}
+    run2_rows: List[Dict[str, str]] = []
+    for q in RUN2_QUERIES:
+        rows = read_csv(f"citation_audit_{q}.csv")
+        run2_rows.extend(rows)
+        run2_queries[q] = citation_precision(rows)
+        run2_queries[q]["by_source"] = by_source(rows)
+        run2_claims[q] = claim_level(read_csv(f"citation_audit_{q}_claims.csv"))
+    run2_overall = citation_precision(run2_rows)
+    run2_overall["by_source"] = by_source(run2_rows)
+    combined = citation_precision(all_rows + run2_rows)
+    combined["by_source"] = by_source(all_rows + run2_rows)
+    probes2 = read_csv("refusal_probes_run2.csv")
+    probe2_rows = read_csv("citation_audit_probes_run2.csv")
+
     scores = AUDIO_OVERVIEW["scores"]
     return {
         "queries": per_query,
@@ -202,6 +239,18 @@ def run_audit() -> Dict[str, object]:
             "rows": probes,
             "p2_badges": citation_precision(p2_rows),
         },
+        "run2": {
+            "queries": run2_queries,
+            "overall": run2_overall,
+            "claim_level": run2_claims,
+            "probes": {
+                "count": len(probes2),
+                "outcomes": dict(Counter(p["outcome"] for p in probes2)),
+                "rows": probes2,
+                "probe_badges": citation_precision(probe2_rows),
+            },
+        },
+        "combined": combined,
         "audio": {**AUDIO_OVERVIEW, "mean_score": sum(scores.values()) / len(scores)},
     }
 
@@ -211,6 +260,10 @@ def check_against_lab_file(result: Dict[str, object]) -> List[str]:
     problems = []
     rows = dict(result["queries"])
     rows["all"] = result["overall"]
+    rows.update(result["run2"]["queries"])
+    rows["run2"] = result["run2"]["overall"]
+    rows["combined"] = result["combined"]
+    rows["probe_badges_run2"] = result["run2"]["probes"]["probe_badges"]
     for key, expected in LAB_FILE_TOTALS.items():
         got = (
             rows[key]["badges"],
@@ -277,6 +330,62 @@ def print_text(result: Dict[str, object]) -> None:
         print(f"  {metric:<26} {score}/5")
     print(f"  {'Mean':<26} {a['mean_score']:.1f}/5")
     print("  Claim check: " + ", ".join(f"{v} {k}" for k, v in a["claim_check"].items()))
+    print("  (generated from Documents A and B, before Document C was added)")
+    print_run2_text(result)
+
+
+def print_run2_text(result: Dict[str, object]) -> None:
+    run2 = result["run2"]
+    print("\n" + "=" * 78)
+    print("Run 2 (2026-11-09): notebook with Documents A, B and C")
+    print("=" * 78)
+    header = f"{'Query':<10}{'Badges':>7}{'Supp.':>7}{'Part.':>7}{'Unsup.':>7}{'Strict':>10}{'Lenient':>10}"
+    print(header)
+    print("-" * len(header))
+    for q in RUN2_QUERIES:
+        r = run2["queries"][q]
+        print(
+            f"{q.upper():<10}{r['badges']:>7}{r[SUPPORTED]:>7}{r[PARTIAL]:>7}"
+            f"{r[UNSUPPORTED]:>7}{pct(r['strict']):>10}{pct(r['lenient']):>10}"
+        )
+    o = run2["overall"]
+    print("-" * len(header))
+    print(
+        f"{'RUN 2':<10}{o['badges']:>7}{o[SUPPORTED]:>7}{o[PARTIAL]:>7}"
+        f"{o[UNSUPPORTED]:>7}{pct(o['strict']):>10}{pct(o['lenient']):>10}"
+    )
+    print("\nBy source document (Q6 and Q7):")
+    for src, r in o["by_source"].items():
+        print(
+            f"  {src:<56} {r['badges']:>3} badges   strict {pct(r['strict']):>6}"
+            f"   lenient {pct(r['lenient']):>6}"
+        )
+    c = result["combined"]
+    print(
+        f"\nCombined with run 1 (Q1-Q7, two notebook states): {c['badges']} badges, "
+        f"{c[SUPPORTED]} supported, {c[PARTIAL]} partial, {c[UNSUPPORTED]} unsupported; "
+        f"strict {pct(c['strict'])}, lenient {pct(c['lenient'])}"
+    )
+
+    print("\nClaim level (run 2):")
+    for q, cl in run2["claim_level"].items():
+        print(
+            f"  {q.upper()}: {cl['assertions']} assertions, {cl['cited']} cited, "
+            f"{cl['uncited']} uncited; of the cited, {cl[SUPPORTED]} supported, "
+            f"{cl[PARTIAL]} partial ({pct(cl['claim_level_supported'])}); "
+            f"{cl['single_badge_support']} supported by a single badge"
+        )
+
+    p = run2["probes"]
+    print("\nEpistemic-refusal probes (run 2):")
+    for row in p["rows"]:
+        print(f"  {row['probe_id']} ({row['probe_type']}): {row['outcome']}; badges: {row['badges']}")
+    b = p["probe_badges"]
+    print(
+        f"  Badge audit of M1-M3: {b['badges']} badges, {b[SUPPORTED]} supported, "
+        f"{b[PARTIAL]} partial; strict {pct(b['strict'])}, lenient {pct(b['lenient'])}"
+        " (the 8 badges on P2 in run 2 were not audited)"
+    )
 
 
 def print_markdown(result: Dict[str, object]) -> None:
@@ -295,6 +404,20 @@ def print_markdown(result: Dict[str, object]) -> None:
     print(
         f"| **All five** | {o['badges']} | {o[SUPPORTED]} | {o[PARTIAL]} | "
         f"{o[UNSUPPORTED]} | {pct(o['strict'])} | {pct(o['lenient'])} |"
+    )
+    print("\nRun 2 (Documents A, B and C):\n")
+    print("| Query | Badges | Supported | Partial | Unsupported | Strict precision | Lenient precision |")
+    print("| :--- | ---: | ---: | ---: | ---: | ---: | ---: |")
+    for q in RUN2_QUERIES:
+        r = result["run2"]["queries"][q]
+        print(
+            f"| {q.upper()} | {r['badges']} | {r[SUPPORTED]} | {r[PARTIAL]} | "
+            f"{r[UNSUPPORTED]} | {pct(r['strict'])} | {pct(r['lenient'])} |"
+        )
+    o2 = result["run2"]["overall"]
+    print(
+        f"| **Run 2** | {o2['badges']} | {o2[SUPPORTED]} | {o2[PARTIAL]} | "
+        f"{o2[UNSUPPORTED]} | {pct(o2['strict'])} | {pct(o2['lenient'])} |"
     )
 
 
@@ -323,7 +446,7 @@ def main() -> int:
             for line in problems:
                 print("  " + line)
             return 1
-        print("\nCHECK PASSED: CSV totals match Section 2.7 of the lab file.")
+        print("\nCHECK PASSED: CSV totals match Sections 2.7 and 2.10 of the lab file.")
     return 0
 
 

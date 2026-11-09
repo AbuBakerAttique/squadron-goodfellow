@@ -1,0 +1,10 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,Document C adopts the GraphRAG and Leiden framework from Edge et al. and applies it to deep-space operations,1,no single badge,partial,"The passage shows Document C applying Leiden and community reports, not adopting them from Edge et al."
+C02,"Edge: vector RAG fails on global sensemaking queries (for example broad themes) because it retrieves only isolated, localised chunks",2 3,S,supported,Badge 3 alone supports it
+C03,Document C: local top-k vector retrieval failed on ship-wide diagnostic queries such as pulsar interference across all departments,4,S,supported,At least one cited passage fully supports it
+C04,"Edge: hierarchical Leiden partitions the entity graph into nested, modular communities of closely related nodes by optimising modularity",5 6 7 8,no single badge,supported,"The four badges together cover Leiden, the hierarchy, nested modular communities and modularity; none covers all of it"
+C05,Document C: Leiden maximises modularity Q to split the ship's entity graph into isolated hierarchical communities,1,S,supported,At least one cited passage fully supports it
+C06,"Edge: pre-generated, report-like community summaries across the hierarchy, answered by map-reduce",5 9 10,S,supported,Badge 5 alone supports it
+C07,Document C: pre-computed Community Summary Reports across the Leiden partitions restore global sensemaking across all 50 logs,1,S,supported,At least one cited passage fully supports it
+C08,"Edge evaluate comprehensiveness, diversity and token efficiency",2 11 12,S,supported,Badge 12 alone supports it
+C09,Document C: Leiden clustering as an operational firewall against Entity Cluster Cross-Contamination (Hydroponics vs Antimatter Propulsion),1,no single badge,partial,The passage names the problem and the Leiden fix but not that Leiden prevents it

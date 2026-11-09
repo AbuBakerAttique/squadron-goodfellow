@@ -1,0 +1,8 @@
+claim_id,claim,badge,source,verdict,note
+M1-C01,Year 2099 Mk-IV Quantum Warp Drive hardware does not exist in the 2026/27 Noosphere registry (the archive says so),1,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,"Section 6 manifest lists it as absent, with this wording"
+M1-C02,The archive's registries list contemporary components such as PR-882-HEX and VALVE-CRYO-404-Z,2,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,partial,Section 3 lists both codes; the passage does not call them 2026/27 components or registry entries
+M2-C01,Tarkov's borscht recipe is not in the sources,1,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,Section 6 manifest lists it as completely absent
+M2-C02,"The archive lists the recipe as absent, stored only on an air-gapped USB stick in the Mess Hall",1,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,"Same Section 6 passage, which includes the USB-stick note"
+M3-C01,The Enterprise dilithium chamber temperature is not in the sources,1,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,Section 6 manifest lists it as absent
+M3-C02,"The archive classes it as fictional television lore, absent from the archive and from Lewis et al. and Edge et al.",1,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,Section 6 manifest says exactly this
+M3-C03,ALPHA-9 activates if the ship's core temperature exceeds 4.2 x 10^7 Kelvin,2,Document_C_USSE_Noosphere_Technical_Archive_Extract.md,supported,Section 3: the Sector 4 Engineering protocol triggers above that core temperature; 'ship's' is the model's wording

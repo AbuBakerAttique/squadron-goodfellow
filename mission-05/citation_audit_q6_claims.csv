@@ -1,0 +1,6 @@
+claim_id,claim,badges,fully_supported_by_a_single_badge,claim_level_verdict,note
+C01,"Opening claim: Document C and Lewis et al. align conceptually, but Document C maps the modes to spacecraft control tasks",,,uncited,Summary sentence with no badge
+C02,"Lewis RAG-Sequence: one retrieved document treated as a single latent variable, marginalised over the top-K, so the same document predicts every target token",1 2,S,supported,Badge 2 alone supports it
+C03,"Document C: RAG-Sequence mode for single atomic astrogation commands, conditioning on the same top-K documents across the whole command",3,S,supported,At least one cited passage fully supports it
+C04,"Lewis RAG-Token: a different latent document per token, marginalised token by token, synthesising across passages (multi-fact Jeopardy clues)",1 4 5,no single badge,supported,Badges 4 and 5 together cover the mechanism and the Jeopardy demonstration; each alone covers one half
+C05,"Document C: RAG-Token mode for multi-system status briefings (cryogenic valve codes from engineering logs, pulsar spin rates from astrophysics logs)",6,no single badge,partial,The passage supports the mode and the example; the word 'cryogenic' is not in it

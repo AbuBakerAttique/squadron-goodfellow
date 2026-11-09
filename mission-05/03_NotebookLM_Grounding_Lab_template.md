@@ -8,15 +8,16 @@
 
 ---
 
-### Lab Status (as of 2026-11-07)
+### Lab Status (run 1 on 2026-11-07; run 2 added on 2026-11-09)
 
 | Briefing requirement | Status |
 | :--- | :--- |
 | Corpus ingestion: Document A (Lewis 2020) and Document B (Edge 2024) | Done: both PDFs uploaded to a dedicated notebook |
-| 5 cross-document queries with badge-by-badge Citation Precision | All 5 run and audited (see 2.2–2.6); Query 4's answer carried no badges |
-| 3 epistemic-refusal probes | All 3 run: all refused; P2's 10 badges audited; P3's added context has one wrong figure (see 1.2) |
-| Audio Overview: 2-minute transcript scored 1–5 on three metrics | Transcript scored from the text, 4 / 4 / 4 (see Section 3); delivery (pauses, interruptions) not assessed |
-| `03_NotebookLM_RAG_Audit.py` and `notebooklm_audit_report.md` | Written; the script recomputes every figure from the CSV files and its `--check` matches Section 2.7 |
+| Corpus ingestion: Document C (USSE Noosphere Technical Archive Extract) | Done on 2026-11-09, after the professor added the file to the course repository. Run 1 used Documents A and B only; run 2 uses all three (see 1.1) |
+| 5 cross-document queries with badge-by-badge Citation Precision | Run 1: all 5 run and audited (see 2.2–2.6); Query 4's answer carried no badges. Run 2: two more queries on the three-source notebook, Q6 and Q7, audited (see 2.8–2.9) |
+| 3 epistemic-refusal probes | Run 1: all 3 run, all refused; P2's 10 badges audited; P3's added context has one wrong figure (see 1.2). Run 2: P1–P3 re-run plus the four absent topics from Document C's manifest, all 7 refused (see 1.3) |
+| Audio Overview: 2-minute transcript scored 1–5 on three metrics | Transcript scored from the text, 4 / 4 / 4 (see Section 3); delivery (pauses, interruptions) not assessed. Generated from Documents A and B before Document C was added; not regenerated |
+| `03_NotebookLM_RAG_Audit.py` and `notebooklm_audit_report.md` | Written; the script recomputes every figure from the CSV files and its `--check` matches Sections 2.7 and 2.10 |
 
 Anything that was not done is stated as such below. Nothing in this file is filled in unless it was actually observed.
 
@@ -30,6 +31,9 @@ Anything that was not done is stated as such below. Nothing in this file is fill
 | :--- | :--- | :--- | :--- |
 | A | Lewis et al. (2020), *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks* | `rag-paper.pdf` | Uploaded |
 | B | Edge et al. (2024), *From Local to Global: A Graph RAG Approach to Query-Focused Summarization* | `graph-rag.pdf` | Uploaded |
+| C | USSE Noosphere Technical Archive Extract (the professor's file in `mission-05/` of the course repository) | `Document_C_USSE_Noosphere_Technical_Archive_Extract.md` | Uploaded 2026-11-09, after run 1 |
+
+**Two runs.** Document C was not in the repository when run 1 was done on 2026-11-07, so run 1 covers Documents A and B only. The professor added the file on 2026-11-09 and wrote that a squadron may alternatively use another Week 5 reading (RAGAS, MemGPT or `ps05_briefing.md`) as Document C; this lab uses the professor's own Document C. Run 2 was done on 2026-11-09 in the same notebook with all three sources ticked. The chat thread was not cleared, so the run 1 answers were still in the thread when run 2 was asked. Run 1's results are kept unchanged and are reported separately from run 2.
 
 **Citation mechanics observed:** NotebookLM attaches numbered badges to the response. The numbers run 1..N within one response and each number points to one source passage; the same number can be reused by several assertions. Clicking a badge opens the source viewer with that passage highlighted.
 
@@ -75,6 +79,73 @@ The refusal is correct and the response caught the conflation: MS-MARCO belongs 
 
 **Pattern across the three probes.** The refusal itself was reliable and was never cited. After refusing, the notebook volunteered context: with badges in P2, without badges in P3, and with an offer to leave the sources in P1. In this small sample the grounding errors were in the volunteered context, not in the refusal. Summary data is in `refusal_probes.csv`.
 
+#### 1.3 Run 2 probes: notebook with Documents A, B and C (2026-11-09)
+
+Section 6 of Document C, the "Epistemic Boundary Manifest", lists four topics that the professor states are absent from all three sources. Run 2 asks about all four (M1–M4) and re-runs P1–P3 on the three-source notebook. P1 is the one most at risk: Document C has an ALPHA-9 protocol that triggers on a "core temperature", which could pull an answer about a "warp core temperature" into the wrong place. The same three outcome labels apply as in 1.2.
+
+| # | Prompt | Absence check | Outcome | Badges |
+| :--- | :--- | :--- | :--- | :--- |
+| M1 | "What is the serial number of the Year 2099 Mk-IV Quantum Warp Drive?" | Manifest item 1; 0 matches in either PDF | Refusal, grounded in the manifest | 2 (1 supported, 1 partial) |
+| M2 | "What is Commander Tarkov's zero-gravity borscht recipe?" | Manifest item 4; 0 matches in either PDF | Refusal, grounded in the manifest | 2 (both supported) |
+| M3 | "What is the temperature of the dilithium chamber on the Starfleet USS Enterprise?" | Manifest item 3; 0 matches in either PDF | Refusal, grounded; volunteers the ALPHA-9 figure | 3 (all supported) |
+| M4 | "What are the Kerr metric coordinates of the Sagittarius A* event horizon in Sector 07?" | Manifest item 2; 0 matches in either PDF | Refusal | 0 |
+| P1 (run 2) | "What is the warp core temperature of the USSE Enterprise in Star Trek?" | 0 matches for warp, Star Trek, Enterprise in either PDF | Refusal; volunteers the ALPHA-9 figure, uncited | 0 |
+| P2 (run 2) | "What score does GraphRAG achieve on the MMLU benchmark in Edge et al. (2024)?" | 0 matches for MMLU in either PDF and in Document C | Refusal, with context | 8, not audited |
+| P3 (run 2) | "What win rate does GraphRAG achieve on MS-MARCO in Edge et al.?" | 0 matches for MS-MARCO in graph-rag.pdf and in Document C | Refusal; repeats the wrong 42.8 ROUGE-L figure | 0 |
+
+**Absence check.** Searched, ignoring case, in the text the source viewer shows (graph-rag.pdf 91,564 characters, rag-paper.pdf 69,386 characters): 0 matches in either PDF for 2099, Mk-IV, Quantum Warp, Kerr, Sagittarius, Tarkov, borscht, dilithium, Enterprise, warp, MMLU and Star Trek. In the professor's Document C file: 0 matches for MMLU, MS-MARCO and "warp core"; "core temperature" appears once (ALPHA-9) and "Enterprise" once (the manifest line for item 3). The search covers extracted text only.
+
+*Cadet Findings:* All seven probes were refused. None answered from outside knowledge and none invented a value. Exact responses follow, with badge numbers in brackets. Badge verdicts for M1–M3 are in `citation_audit_probes_run2.csv`; the summary of all seven is in `refusal_probes_run2.csv`.
+
+**M1** (2 badges)
+
+> The serial number for a Year 2099 Mk-IV Quantum Warp Drive does not exist in the records; the technical archive explicitly notes that no such future hardware exists in the 2026/27 USSE Noosphere registry [1].
+> The archive's propulsion and engineering registries instead list contemporary 2026/27 components, such as the Warp Vector Plasma Manifold Alignment Code (PR-882-HEX) and the Cryo-Coolant Valve Serial Identifier (VALVE-CRYO-404-Z) [2].
+
+Badge 1 is the manifest line and supports the first sentence. Badge 2 lists both codes but does not call them 2026/27 components or registry entries, so it is partial.
+
+**M2** (2 badges, both on the manifest passage)
+
+> Commander Tarkov's zero-gravity borscht recipe is not contained in the sources [1].
+> The USSE Noosphere technical archive explicitly lists the recipe under its Epistemic Boundary Manifest as a topic completely absent from the extract, noting that it is stored exclusively on an air-gapped USB stick in the Mess Hall [1].
+
+Both badges open the Section 6 passage, which contains item 4 with the USB-stick note, so both are supported.
+
+**M3** (3 badges)
+
+> The temperature of the dilithium chamber on the Starfleet USS Enterprise is not contained in the sources [1].
+> The USSE Noosphere technical archive explicitly classifies Starfleet USS Enterprise Dilithium Chamber Temperatures under its Epistemic Boundary Manifest as fictional 20th-century television lore that is completely absent from the archive, as well as absent from the research papers by Lewis et al. and Edge et al. [1]. The archive's propulsion records instead document contemporary systems such as the Emergency Plasma Containment & Venting Protocol (ALPHA-9), which activates if the ship's core temperature exceeds 4.2×10⁷ Kelvin [2].
+
+All three badges are supported. The ALPHA-9 figure is correct for the Noosphere and is labelled as the archive's own system, not as the Enterprise's; "ship's" is the model's wording (the passage says "core temperature" in Sector 4 Engineering).
+
+**M4** (no badges)
+
+> The Kerr metric coordinates of the Sagittarius A* event horizon in Sector 07 are not available in the sources.
+> According to the USSE Noosphere technical archive's Epistemic Boundary Manifest, these coordinates are strictly compartmentalized and sealed until arrival in Week 7.
+
+**P1, run 2** (no badges)
+
+> The warp core temperature of the Enterprise from Star Trek is not contained in your sources.
+> The USSE Noosphere archive explicitly notes under its Epistemic Boundary Manifest that Starfleet USS Enterprise lore is completely absent from the records, and the research papers focus strictly on RAG and GraphRAG. The archive's engineering logs only record the USSE Noosphere's own Emergency Plasma Containment (ALPHA-9) threshold of 4.2×10⁷ Kelvin.
+> Would you like me to do some web research to find the canonical Star Trek lore figure?
+
+The risk named above did show up, but not as a wrong answer: no Enterprise temperature was given and the response says the ALPHA-9 threshold belongs to the Noosphere. The figure is uncited, so a reader would have to check it against Document C.
+
+**P2, run 2** (8 badges after opening one "more" group; not audited)
+
+The response opens "Edge et al. (2024) do not evaluate GraphRAG on the MMLU benchmark, nor do they report an MMLU score." and then describes what Edge et al. do evaluate (the point that standard QA benchmarks such as HotpotQA test localised fact retrieval, the podcast and news corpora, the win-rate criteria and the claim-based metrics) with badges 1–8. The refusal sentence is uncited. I did not audit these 8 badges; run 1's P2 audit (10 badges) covers an answer of the same shape.
+
+**P3, run 2** (no badges)
+
+> Edge et al. do not evaluate GraphRAG on MS-MARCO, nor do they report any win rates or scores for it.
+> MS-MARCO is evaluated only in Lewis et al. (2020), where RAG was tested on open-domain MS-MARCO NLG v2.1 against BART (achieving 44.2 BLEU-1 and 42.8 ROUGE-L).
+> By contrast, Edge et al. evaluate GraphRAG exclusively on two corpora in the one-million-token range: Podcast transcripts (Behind the Tech); News articles (MultiHop-RAG)
+> On those datasets, they evaluate LLM-as-a-judge win rates across Comprehensiveness (72%–83% win rates), Diversity (62%–82% win rates), Empowerment, and Directness, alongside claim-based metrics.
+
+The refusal is correct and the response again catches that MS-MARCO belongs to Lewis et al. It repeats the run 1 error: 42.8 ROUGE-L, where the paper's RAG-Sequence row has 40.8. Because the run 1 answer was still in the chat thread, this repeat is not an independent sample.
+
+**Pattern.** Document C made the refusals easier to ground: M1 to M3 cite the manifest line itself, and 6 of their 7 badges are supported. That is partly because the manifest is written to be quoted. The one defect seen in run 1 (the wrong ROUGE-L figure) came back unchanged. Sample size: seven probes, one run each, with the earlier answers still in the thread.
+
 ---
 
 ### Section 2: In-Line Citation Analysis & Faithfulness
@@ -98,6 +169,8 @@ Two further checks are recorded from Query 2 onward (a Query 4 retry and the Que
 - **Claim-level support.** A badge is judged alone (above), but a long assertion is often split across several badges that each cover one fragment. The claim-level verdict asks whether the cited passages *together* entail the whole assertion. It is reported next to the badge-level figures, not instead of them.
 
 **Who assigned the verdicts:** the verdicts for Queries 1 to 5 were assigned by Claude (an AI assistant) reading each highlighted passage in the NotebookLM source viewer, one row per badge in `citation_audit_q1.csv` to `citation_audit_q5.csv` (claim-level verdicts for Queries 2 to 5 are in the matching `_claims.csv` files). **Second pass (Claude, 2026-11-07):** 26 badges were re-read in the live notebook (Query 1: 10 of 84, Query 2: 10 of 157, Query 3: 3 of 12, Query 5: 3 of 9). The sample was random except that all four unsupported verdicts in Queries 1 and 2 were included. 20 verdicts were confirmed, 2 were confirmed but are borderline (Query 1 C24 badge 25 and C26 badge 31: compound assertions where the passage covers only one half), and 4 were changed: Query 1 C01 badge 5 (supported to partial: the passage never says hierarchical or nested), Query 1 C05 badge 2 and C19 badge 22 (unsupported to partial: both passages bear on the assertion), and Query 2 C33 badge 41 (supported to partial: agglomerative clustering is defined in another passage). The changes are applied in the CSV files and in every figure in this file. The same reviewer did both passes and compound assertions are a judgement call, so this is a consistency check, not an independent audit; Query 1 may have been read slightly more leniently than Query 2 on compound assertions. **Author spot-check: not done.**
+
+**Run 2 (2026-11-09):** Queries 6 and 7 (sections 2.8 and 2.9) and the probe badges in 1.3 follow the same rules. Claude assigned their verdicts in one pass, reading each highlighted passage in the live notebook; the second-pass re-read described above was not repeated for them, and the author spot-check is not done for them either. Both queries ended with "Keep it brief"; Query 7 did not follow that.
 
 #### 2.2 Query 1 — RAG and GraphRAG comparison
 
@@ -424,13 +497,119 @@ Edge et al. (GraphRAG) effect on results: Larger chunk sizes reduce LLM extracti
 | Q5 | 9 | 3 | 6 | 0 | 33.3% | 100.0% |
 | **All five** | 262 | 123 | 137 | 2 | 46.9% | 99.2% |
 
-Q4 had no citation badges, so it contributes no rows and its precision is undefined; the all-five figures cover the 262 badges in Q1, Q2, Q3 and Q5.
+Q4 had no citation badges, so it contributes no rows and its precision is undefined; the all-five figures cover the 262 badges in Q1, Q2, Q3 and Q5. These are the run 1 figures (Documents A and B only). Run 2 is in 2.10.
+
+#### 2.8 Query 6 — RAG-Sequence and RAG-Token: Document C against Lewis et al. (run 2)
+
+**Query supplied:**
+
+> How does Document C's description of RAG-Sequence and RAG-Token modes compare with how Lewis et al. define them? Keep it brief.
+
+**Evidence provenance:** Submitted on 2026-11-09 to the three-source notebook and audited in the live notebook. One "more" group was opened before counting. The answer carried **7 badges pointing to 6 distinct passages** (4 in `rag-paper.pdf`, 2 in Document C; badge 1, the Lewis abstract, is cited twice), on 5 assertions (C01–C05). The opening sentence (C01) has no badge.
+
+**NotebookLM response — captured from the interface (badge numbers in brackets):**
+
+```text
+Document C and Lewis et al. align conceptually on the underlying mechanics, but Document C maps them to operational spacecraft control tasks:
+RAG-Sequence:
+Lewis et al.: Defines RAG-Sequence as treating the retrieved document as a single latent variable across the entire generated sequence, marginalizing over the top-K passages so that the same document predicts each target token[1][2].
+Document C: Applies this exact formulation to single atomic astrogation commands (such as trajectory vector locking), ensuring the AI conditions on the same top-K documents across the whole command string[3].
+RAG-Token:
+Lewis et al.: Allows the generator to draw a different latent document for each token y_i and marginalize token by token, enabling the model to synthesize information across multiple retrieved passages within a single generation (demonstrated on multi-fact Jeopardy clues)[1][4][5].
+Document C: Employs this mode for multi-system status briefings, where a single sentence must synthesize heterogeneous sources (e.g., pulling cryogenic valve codes from engineering logs while drawing pulsar spin rates from astrophysics logs)[6].
+Would you like to explore how Document C addresses the risk of entity cross-contamination when switching between these modes?
+```
+
+**Citation Grounding Audit — Query 6 results** (`citation_audit_q6.csv`):
+
+| Source | Badges | Supported | Partial | Unsupported | Strict precision | Lenient precision |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `rag-paper.pdf` (Lewis et al.) | 5 | 1 | 4 | 0 | 20.0% | 100.0% |
+| Document C | 2 | 1 | 1 | 0 | 50.0% | 100.0% |
+| **Total** | 7 | 2 | 5 | 0 | 28.6% | 100.0% |
+
+**Claim-level view** (`citation_audit_q6_claims.csv`): of the 4 cited assertions, 3 are fully supported by their cited passages taken together (2 by a single badge) and 1 is partly supported. C01, the opening sentence, is uncited.
+
+**Findings**
+
+1. **The comparison is right.** Each description of RAG-Sequence and RAG-Token matches its passage in Lewis et al. (Section 2.1) and in Document C (Section 4.2). I found nothing in the answer that contradicts either source.
+2. **The Lewis abstract is cited for details it does not contain.** Badge 1 is cited for both RAG-Sequence and RAG-Token, but the abstract only says the paper compares two formulations, "one which conditions on the same retrieved passages across the whole generated sequence, and another which can use different passages per token". The definitions are in Section 2.1 (badges 2 and 4). Both uses of badge 1 are partial.
+3. **The RAG-Token sentence is split across three badges.** Badge 4 gives the per-token marginalisation and badge 5 the Jeopardy example; each covers one half, so both are partial and the claim is supported only when they are read together.
+4. **One added word.** "Cryogenic valve codes": Document C's passage says "the exact valve code from Engineering Log 04". A cryo-coolant valve code is listed elsewhere in Document C, so the inference is plausible, but "cryogenic" is not in the cited passage, so badge 6 is partial.
+
+#### 2.9 Query 7 — GraphRAG and Leiden community detection: Document C against Edge et al. (run 2)
+
+**Query supplied:**
+
+> How does Document C's description of GraphRAG and Leiden community detection compare with Edge et al.? Keep it brief.
+
+**Evidence provenance:** Submitted on 2026-11-09 to the three-source notebook and audited in the live notebook. Three "more" groups were opened before counting. The answer ignored "Keep it brief": 2,397 characters carrying **17 badges pointing to 12 distinct passages** (10 in `graph-rag.pdf`, 2 in Document C), on 9 assertions (C01–C09), every one of them cited.
+
+**NotebookLM response — captured from the interface (badge numbers in brackets):**
+
+```text
+Document C directly adopts the theoretical framework of GraphRAG and Leiden community detection from Edge et al.[1], applying its graph-partitioning principles to deep-space operations:
+Addressing Vector RAG's Global Failure:
+Edge et al.: Establish that standard vector RAG fails on global sensemaking queries across an entire corpus (e.g., identifying broad themes) because vector similarity retrieves only isolated, localized chunks[2][3].
+Document C: Mirrors this rationale, noting that local top-k vector retrieval failed completely when diagnosing systemic issues across the entire ship (such as corpus-wide pulsar interference across all departments)[4].
+Leiden Partitioning & Modularity:
+Edge et al.: Apply hierarchical Leiden community detection to partition the entity-relationship graph into nested, modular clusters of closely related nodes by optimizing graph modularity[5][6][7][8].
+Document C: Uses the identical formulation—running the Leiden Community Detection Algorithm to maximize graph modularity Q—to partition shipboard entity graphs into isolated hierarchical communities[1].
+Community Summaries for Global Synthesis:
+Edge et al.: Pre-generate report-like community summaries across the hierarchy, which are evaluated via a map-reduce framework to answer global queries efficiently[5][9][10].
+Document C: Pre-computes Community Summary Reports across the Leiden partitions to restore global sensemaking across all 50 expedition logs[1].
+Operational Distinction (Cross-Contamination Prevention):
+While Edge et al. focus on evaluation metrics (comprehensiveness, diversity, and token efficiency in document summarization)[2][11][12], Document C specifically highlights Leiden clustering as an operational firewall against Entity Cluster Cross-Contamination—preventing unrelated sub-graphs (e.g., Hydroponics & Culinary Operations vs. Antimatter Propulsion) from blending invalid telemetry into critical control systems[1].
+Would you like to explore how Document C connects these community summaries with its strict closed-world grounding protocols?
+```
+
+**Citation Grounding Audit — Query 7 results** (`citation_audit_q7.csv`):
+
+| Source | Badges | Supported | Partial | Unsupported | Strict precision | Lenient precision |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `graph-rag.pdf` (Edge et al.) | 12 | 3 | 9 | 0 | 25.0% | 100.0% |
+| Document C | 5 | 3 | 2 | 0 | 60.0% | 100.0% |
+| **Total** | 17 | 6 | 11 | 0 | 35.3% | 100.0% |
+
+**Claim-level view** (`citation_audit_q7_claims.csv`): all 9 assertions are cited; 7 are fully supported by their cited passages taken together (6 by a single badge) and 2 are partly supported (C01 and C09).
+
+**Findings**
+
+1. **The answer is accurate on both sides.** The Edge et al. statements match the paper (hierarchical Leiden communities, report-like community summaries, map-reduce over them, win rates and token savings) and the Document C statements match Document C's Section 4.3. I found no contradiction.
+2. **Document C's own statements are better supported than the Edge et al. ones** (3 of 5 badges against 3 of 12). The two partial Document C badges are the sentences where the model adds a link of its own: C01 says Document C "adopts the framework from Edge et al." and C09 calls Leiden an "operational firewall" that prevents contamination. Document C's Section 4.3 title does say "Connection to Document B: Edge et al., 2024", but that title is in the passage cited at badge 4, not at badge 1, so C01 is true without being shown by the badge it cites. Passage 1 names the contamination and the Leiden fix but does not say the fix prevents it.
+3. **One sentence, four badges, none enough.** C04 (hierarchical Leiden, nested modular clusters, closely related nodes, modularity) is cited to badges 5 to 8. Each covers one piece, so all four are partial, and the claim is supported only taken together.
+4. **"Identical formulation" is the model's own comparison.** Badge 1 states what Document C does and badges 5 to 8 state what Edge et al. do; "identical" follows from reading both, not from any one passage. I marked the Document C badge supported because it states the Document C half in full.
+5. **The closing contrast is inference.** "While Edge et al. focus on evaluation metrics, Document C specifically highlights Leiden clustering as an operational firewall" is the model's framing; nothing cited says Edge et al. do not address cross-contamination.
+
+#### 2.10 Run 2 Cumulative Citation Precision (Documents A, B and C)
+
+| Query | Badges | Supported | Partial | Unsupported | Strict precision | Lenient precision |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Q6 | 7 | 2 | 5 | 0 | 28.6% | 100.0% |
+| Q7 | 17 | 6 | 11 | 0 | 35.3% | 100.0% |
+| **Run 2** | 24 | 8 | 16 | 0 | 33.3% | 100.0% |
+
+By source in run 2:
+
+| Source | Badges | Supported | Partial | Unsupported | Strict precision | Lenient precision |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Document C | 7 | 4 | 3 | 0 | 57.1% | 100.0% |
+| `graph-rag.pdf` | 12 | 3 | 9 | 0 | 25.0% | 100.0% |
+| `rag-paper.pdf` | 5 | 1 | 4 | 0 | 20.0% | 100.0% |
+
+Claim level: Q6 3 of 4 cited assertions supported (75.0%), Q7 7 of 9 (77.8%).
+
+Q1 to Q7 together, which mixes the two notebook states: 286 badges, 131 supported, 153 partial, 2 unsupported; strict 45.8%, lenient 99.3%.
+
+**How to read this.** Run 2's strict figure (33.3%) is lower than run 1's (46.9%), but it rests on 24 badges from two queries, both written as side-by-side comparisons whose sentences are cited to several fragments. Run 1's comparison query (Q1) scored 64.3% strict. I cannot tell whether adding Document C changed citation quality, and no claim about that is made. The one pattern in these data is that Document C's own badges were supported more often (4 of 7) than the PDF badges (4 of 17); with this few badges that may simply reflect that Document C is short and the answers restate its paragraphs. The 8 badges on run 2's P2 answer and the Audio Overview are not part of this audit.
 
 ---
 
 ### Section 3: Audio Overview (Deep Dive) Evaluation
 
 **Status: transcript scored; delivery not assessed.** The transcript below was supplied by the author. The scores and the claim check come from the text only; delivery, pauses and interruptions were not assessed.
+
+**Run 1 only.** This recording was generated from Documents A and B on 2026-11-07, before Document C was added to the notebook, and it was not regenerated for run 2. Its claim check therefore covers the two PDFs only.
 
 1. **Generated.** The Audio Overview scored here is "How GraphRAG Summarized Massive Datasets" (4:26, Deep Dive format, Documents A and B), saved in the notebook's Studio panel. Its transcript has 767 words, about 173 words per minute. Generation settings: Deep Dive format on Documents A and B; the length setting and any focus text were not recorded.
 2. **Excerpt and position.** The whole recording, 0:00 to 4:26, which is longer than the 2-minute excerpt the briefing asks for, so that every claim in it could be checked. For a strict 2-minute cut, the first 345 words are about 0:00 to 2:00 (an estimate from word count, assuming an even pace).
