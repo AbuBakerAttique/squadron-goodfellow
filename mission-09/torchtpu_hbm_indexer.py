@@ -46,33 +46,101 @@ class ContradictionResolution:
     audit_explanation: str
 
 
+def _normalise(tensor: torch.Tensor) -> torch.Tensor:
+    """Normalise in FP32, then store/multiply in BF16."""
+    if not tensor.is_floating_point() or not torch.isfinite(tensor).all().item():
+        raise ValueError("Embeddings must be finite floating-point tensors")
+    return F.normalize(tensor.float(), p=2, dim=-1).to(torch.bfloat16)
+
+
+def _mask(mask: Optional[torch.Tensor], shape: Tuple[int, ...], device: torch.device) -> torch.Tensor:
+    if mask is None:
+        return torch.ones(shape, dtype=torch.bool, device=device)
+    if tuple(mask.shape) != shape or mask.dtype != torch.bool:
+        raise ValueError(f"Mask must be boolean with shape {shape}; True means valid")
+    return mask.to(device)
+
+
+def _reduce_maxsim(sim: torch.Tensor, query_mask: torch.Tensor, doc_mask: torch.Tensor) -> torch.Tensor:
+    # Zero padding cannot be allowed to beat a genuinely negative match.
+    masked = sim.masked_fill(~doc_mask[:, None, :], -torch.inf)
+    maxima = masked.max(dim=-1).values.float()
+    maxima = maxima.masked_fill(~query_mask, 0.0)
+    scores = maxima.sum(dim=-1)
+    return scores.masked_fill(~doc_mask.any(dim=-1), -torch.inf)
+
+
 def colbert_maxsim_bfloat16(
     query_Interaction: torch.Tensor,
     doc_Interaction: torch.Tensor,
+    query_mask: Optional[torch.Tensor] = None,
+    doc_mask: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
+    """Compatibility scorer for paired [B,Q,D] and [B,L,D] inputs.
+
+    True mask entries are real tokens. Entirely padded documents score -inf;
+    queries with no valid tokens are rejected. Returns FP32 sums.
     """
-    Computes batched ColBERT Late-Interaction MaxSim score in bfloat16 on TorchTPU / CUDA / CPU.
-    Args:
-        query_Interaction: shape [B, Q_len, D] (L2-normalized token embeddings)
-        doc_Interaction:   shape [B, D_len, D] (L2-normalized token embeddings)
-    Returns:
-        scores: shape [B] in float32 for numerical stability after bfloat16 MXU matmul
+    q, d = query_Interaction, doc_Interaction
+    if q.ndim != 3 or d.ndim != 3 or q.shape[0] != d.shape[0] or q.shape[2] != d.shape[2]:
+        raise ValueError("Expected compatible [B,Q,D] and [B,L,D] tensors")
+    if min(q.shape[1:]) == 0 or d.shape[1] == 0 or q.device != d.device:
+        raise ValueError("Token dimensions must be non-empty and devices must match")
+    qm = _mask(query_mask, tuple(q.shape[:2]), q.device)
+    dm = _mask(doc_mask, tuple(d.shape[:2]), d.device)
+    if not qm.any(dim=-1).all().item():
+        raise ValueError("Every query needs a valid token")
+    sim = torch.matmul(_normalise(q), _normalise(d).transpose(-1, -2))
+    return _reduce_maxsim(sim, qm, dm)
+
+
+class EpistemicContradictionResolver:
+    """Rank current-state claims for one entity/attribute, not establish truth.
+
+    Authority values and publication dates are supplied metadata. Historical
+    claims may have been correct in their own era; lower rank does not erase them.
     """
-    q_bf16 = F.normalize(query_Interaction.to(torch.bfloat16), p=2, dim=-1)
-    d_bf16 = F.normalize(doc_Interaction.to(torch.bfloat16), p=2, dim=-1)
 
-    # Batched token-by-token similarity matrix: [B, Q_len, D_len]
-    sim_matrix = torch.matmul(q_bf16, d_bf16.transpose(-1, -2))
+    def resolve_contradictions(self, claims: List[EpistemicClaim], current_year: int = 2026,
+                               alpha: float = 0.55, decay_lambda: float = 0.04) -> ContradictionResolution:
+        if not claims:
+            raise ValueError("Claims list cannot be empty")
+        if not 0 <= alpha <= 1 or not math.isfinite(decay_lambda) or decay_lambda < 0:
+            raise ValueError("alpha must be in [0,1]; decay_lambda must be finite/non-negative")
+        group = (claims[0].entity, claims[0].attribute)
+        if len({c.doc_id for c in claims}) != len(claims):
+            raise ValueError("Claim document IDs must be unique")
+        scored = []
+        for claim in claims:
+            if (claim.entity, claim.attribute) != group:
+                raise ValueError("Claims must concern the same entity and attribute")
+            if not 0 <= claim.authority_tier <= 1 or claim.timestamp_year > current_year:
+                raise ValueError("Invalid authority or future publication year")
+            weight = alpha * claim.authority_tier + (1 - alpha) * math.exp(
+                -decay_lambda * (current_year - claim.timestamp_year))
+            scored.append((weight, claim))
+        # Do not round before ordering. Explicit ties prefer newer, then more
+        # authoritative sources, then lexicographic ID for reproducibility.
+        scored.sort(key=lambda pair: (-pair[0], -pair[1].timestamp_year,
+                                     -pair[1].authority_tier, pair[1].doc_id))
+        weight, winner = scored[0]
+        superseded = [(c.doc_id, c.value, c.timestamp_year) for _, c in scored[1:]
+                      if c.value != winner.value]
+        explanation = (
+            f"Current-state selection for {winner.entity}.{winner.attribute}: "
+            f"{winner.doc_id} ({winner.timestamp_year}, weight={weight:.6f}); "
+            f"superseded {len(superseded)} conflicting claim(s). "
+            "Historical records are retained; metadata weighting is not independent fact verification."
+        )
+        return ContradictionResolution(winner.entity, winner.attribute, winner.doc_id,
+                                       winner.value, weight, superseded, explanation)
 
-    # Max over document tokens j for each query token i, then sum over query tokens i
-    max_per_query_token = sim_matrix.max(dim=-1).values.to(torch.float32)
-    return max_per_query_token.sum(dim=-1)
 
+class TorchTPUHBMIndexer:
+    """Device-resident BF16 index with eager TPU/CUDA/CPU dispatch.
 
-class TorchTpuHbmIndexer:
-    """
-    Hardware-accelerated bfloat16 Late-Interaction Indexer & Epistemic Contradiction Resolver.
-    Supports optional torch.compile(backend='tpu') when running on Google Cloud TPU / Colab TPU v5e-1.
+    On CPU this uses ordinary RAM, not TPU HBM. Synthetic embeddings in the
+    verification harness test arithmetic only, not semantic retrieval quality.
     """
 
     def __init__(self, use_torch_compile: bool = False):
@@ -80,71 +148,49 @@ class TorchTpuHbmIndexer:
         self.scorer_fn = colbert_maxsim_bfloat16
         if use_torch_compile and self.device.type == "tpu":
             self.scorer_fn = torch.compile(colbert_maxsim_bfloat16, backend="tpu")
+        self.query_tokens: Optional[torch.Tensor] = None
+        self.document_tokens: Optional[torch.Tensor] = None
 
-    def rank_documents_maxsim(
-        self,
-        query_emb: torch.Tensor,
-        doc_embs: torch.Tensor,
-        doc_ids: List[str],
-    ) -> List[Tuple[str, float]]:
+    @torch.no_grad()
+    def compute_maxsim(self, query_emb: torch.Tensor, doc_embs: torch.Tensor,
+                       query_mask: Optional[torch.Tensor] = None,
+                       doc_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+        """One query [Q,D] (or [1,Q,D]) against documents [M,L,D].
+
+        Masks have shapes [Q] and [M,L], with True for real tokens. Returned
+        scores stay on the compute device. An all-padding document scores -inf.
         """
-        Ranks N candidate documents against a query tensor on active compute device.
-        query_emb: [1, Q_len, D] or [Q_len, D]
-        doc_embs:  [N, D_len, D]
-        """
-        if query_emb.dim() == 2:
-            query_emb = query_emb.unsqueeze(0)
-        n_docs = doc_embs.size(0)
-        q_expanded = query_emb.expand(n_docs, -1, -1).to(self.device)
-        d_tensor = doc_embs.to(self.device)
+        if query_emb.ndim == 3 and query_emb.shape[0] == 1:
+            query_emb = query_emb.squeeze(0)
+        if query_emb.ndim != 2 or doc_embs.ndim != 3 or query_emb.shape[-1] != doc_embs.shape[-1]:
+            raise ValueError("Expected [Q,D] query and [M,L,D] documents")
+        if min(query_emb.shape) == 0 or doc_embs.shape[1] == 0:
+            raise ValueError("Token and embedding dimensions must be non-empty")
+        qm = _mask(query_mask, (query_emb.shape[0],), self.device)
+        dm = _mask(doc_mask, tuple(doc_embs.shape[:2]), self.device)
+        if not qm.any().item():
+            raise ValueError("Query needs at least one valid token")
+        self.query_tokens = _normalise(query_emb.to(self.device))
+        self.document_tokens = _normalise(doc_embs.to(self.device))
+        sim = torch.einsum("id,mjd->mij", self.query_tokens, self.document_tokens)
+        return _reduce_maxsim(sim, qm[None, :], dm)
 
-        with torch.no_grad():
-            scores = self.scorer_fn(q_expanded, d_tensor).cpu().tolist()
+    def rank_documents_maxsim(self, query_emb: torch.Tensor, doc_embs: torch.Tensor,
+                              doc_ids: List[str], query_mask: Optional[torch.Tensor] = None,
+                              doc_mask: Optional[torch.Tensor] = None) -> List[Tuple[str, float]]:
+        if doc_embs.ndim != 3 or len(doc_ids) != doc_embs.shape[0] or len(set(doc_ids)) != len(doc_ids):
+            raise ValueError("Provide one unique ID per document")
+        scores = self.compute_maxsim(query_emb, doc_embs, query_mask, doc_mask).cpu().tolist()
+        # Keep full scores for sorting; round only when displaying results.
+        return sorted(zip(doc_ids, scores), key=lambda pair: pair[1], reverse=True)
 
-        paired = list(zip(doc_ids, [round(float(s), 4) for s in scores]))
-        return sorted(paired, key=lambda x: x[1], reverse=True)
+    def resolve_contradictions(self, claims: List[EpistemicClaim], current_year: int = 2026,
+                               alpha: float = 0.55, decay_lambda: float = 0.04) -> ContradictionResolution:
+        return EpistemicContradictionResolver().resolve_contradictions(claims, current_year, alpha, decay_lambda)
 
-    def resolve_contradictions(
-        self,
-        claims: List[EpistemicClaim],
-        current_year: int = 2026,
-        alpha: float = 0.55,
-        decay_lambda: float = 0.04,
-    ) -> ContradictionResolution:
-        """
-        Resolves conflicting multi-hop claims about the same (entity, attribute) using
-        Epistemic Authority Tier and Temporal Recency decay.
-        """
-        if not claims:
-            raise ValueError("Claims list cannot be empty")
 
-        scored_claims: List[Tuple[float, EpistemicClaim]] = []
-        for c in claims:
-            age = max(0, current_year - c.timestamp_year)
-            recency_factor = math.exp(-decay_lambda * age)
-            weight = round(alpha * c.authority_tier + (1.0 - alpha) * recency_factor, 4)
-            scored_claims.append((weight, c))
-
-        scored_claims.sort(key=lambda x: x[0], reverse=True)
-        best_weight, winner = scored_claims[0]
-        superseded = [
-            (c.doc_id, c.value, c.timestamp_year) for _, c in scored_claims[1:]
-        ]
-
-        explanation = (
-            f"Resolved '{winner.entity}.{winner.attribute}' in favor of [{winner.doc_id}] "
-            f"({winner.timestamp_year}, weight={best_weight}): '{winner.value}'. "
-            f"Superseded {len(superseded)} older/lower-authority claim(s)."
-        )
-        return ContradictionResolution(
-            entity=winner.entity,
-            attribute=winner.attribute,
-            winning_doc_id=winner.doc_id,
-            winning_value=winner.value,
-            winning_weight=best_weight,
-            superseded_claims=superseded,
-            audit_explanation=explanation,
-        )
+# Preserve the instructor starter's spelling for existing team imports.
+TorchTpuHbmIndexer = TorchTPUHBMIndexer
 
 
 if __name__ == "__main__":
@@ -185,4 +231,53 @@ if __name__ == "__main__":
     res = indexer.resolve_contradictions(conflicting_claims)
     print("[Contradiction Resolver]", res.audit_explanation)
     assert res.winning_doc_id == "NOOSPHERE_LMC_TELEMETRY_2026"
+    # Independent FP32 reference: explicit loops, rather than the einsum path.
+    q_ref = F.normalize(q_vec.squeeze(0), dim=-1)
+    d_ref = F.normalize(docs_tensor, dim=-1)
+    reference = torch.tensor([sum(max(float(torch.dot(q, token)) for token in doc)
+                                  for q in q_ref) for doc in d_ref])
+    actual = indexer.compute_maxsim(q_vec, docs_tensor).cpu()
+    error = (actual - reference).abs().max().item()
+    assert torch.allclose(actual, reference, atol=0.06, rtol=0.01)
+    assert indexer.query_tokens.dtype == torch.bfloat16
+    assert indexer.document_tokens.dtype == torch.bfloat16
+    print(f"FP32 reference maximum absolute error: {error:.6f}")
+
+    # Padding must not win over negative valid similarities or contribute query scores.
+    mq = torch.tensor([[1., 0.], [0., 1.]])
+    md = torch.tensor([[[-1., 0.], [0., 0.]], [[1., 0.], [0., 1.]]])
+    qm = torch.tensor([True, False])
+    dm = torch.tensor([[True, False], [False, False]])
+    masked = indexer.compute_maxsim(mq, md, qm, dm).cpu()
+    assert masked[0].item() == -1 and masked[1].item() == -math.inf
+    pair_scores = colbert_maxsim_bfloat16(mq.unsqueeze(0), md[:1], qm.unsqueeze(0), dm[:1])
+    assert pair_scores[0].item() == -1
+    assert indexer.rank_documents_maxsim(mq, md[:0], [], qm, dm[:0]) == []
+    print("Padding regression: valid negative match=-1.0; all-padding document=-inf")
+    print("Claim weights (alpha=0.55, lambda=0.04, current_year=2026):")
+    for claim in conflicting_claims:
+        rec = math.exp(-0.04 * (2026 - claim.timestamp_year))
+        print(f"  {claim.doc_id}: authority={claim.authority_tier:.2f}; "
+              f"recency={rec:.6f}; weight={0.55 * claim.authority_tier + 0.45 * rec:.6f}")
+    same = EpistemicClaim("AGREEMENT", conflicting_claims[1].entity, "stellar_state",
+                          conflicting_claims[1].value, 2025, 0.9)
+    assert not indexer.resolve_contradictions([conflicting_claims[1], same]).superseded_claims
+    assert indexer.resolve_contradictions(list(reversed(conflicting_claims))).winning_doc_id == res.winning_doc_id
+    invalid_claim = EpistemicClaim("BAD", "other entity", "stellar_state", "value", 2026, 0.5)
+    for operation in (
+        lambda: indexer.compute_maxsim(mq, md, torch.tensor([False, False]), dm),
+        lambda: indexer.compute_maxsim(mq, md, qm, torch.ones(2, 3, dtype=torch.bool)),
+        lambda: indexer.rank_documents_maxsim(mq, md, ["one"]),
+        lambda: indexer.resolve_contradictions([]),
+        lambda: indexer.resolve_contradictions([conflicting_claims[0], invalid_claim]),
+        lambda: indexer.resolve_contradictions(conflicting_claims, current_year=2020),
+    ):
+        try:
+            operation()
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Expected invalid input to be rejected")
+    print("[PASS] FP32 reference, padding, compatibility, empty-index and validation checks.")
+    print("[PASS] Contradiction ordering, agreeing claims and entity/date validation checks.")
     print("[PASS] Part 3 TorchTPU bfloat16 MaxSim Indexer & Contradiction Resolver verified!")

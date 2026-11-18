@@ -17,7 +17,7 @@
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | Abdul Jalil Memon | `tot_solver.py` | PASS / VERIFIED (harness + 8 self-checks + Game-of-24 benchmark) |
 | **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | `[PASS / VERIFIED]` |
-| **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | Part 3 checks PASS; author review/sign-off pending |
+| **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | PASS / VERIFIED — completed and signed off by Abubaker Attique on 19 November 2026 |
 | **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | `[PASS / VERIFIED]` |
 
 ---
@@ -190,7 +190,7 @@ Length comparison (all unmarked scores are 0.94):
 [OK] Part 3 (Data & Payload Specialist) verification passed.
 ```
 
-**AI assistance:** Codex assisted with implementation changes, verification checks and drafting this section from the executed output. Author review and sign-off are pending. This section verifies Part 3 only; the squad's integration results and final reflection remain separate tasks.
+**AI assistance:** Codex assisted with implementation changes, verification checks and drafting this section from the executed output. Abubaker Attique confirmed completion and sign-off on 19 November 2026. This section verifies Part 3 only; the squad's integration results and final reflection remain separate tasks.
 
 ### Section D — Security & Ethics Sentinel (`horizon_pruner.py`)
 - **Event Horizon Pruning & Ship Anomaly 07 Defense Log:**
