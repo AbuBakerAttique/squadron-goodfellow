@@ -3,8 +3,8 @@
 **Course:** Conversational AI (WS 2026/27) — Week 7: Test-Time Compute & Reasoning Search Paradigms  
 **Sector Waypoint:** `SEC-07-SGR` (Sagittarius A* Supermassive Black Hole)  
 **AURA Subsystem:** Subsystem 07 — Gravitational Search Horizon & Process Reward Evaluator  
-**Squadron Name:** Squadron Goodfellow  
-**Public GitHub Repository URL:** https://github.com/AbuBakerAttique/squadron-goodfellow  
+**Squadron Name:** Squadron Goodfellow<br>
+**Public GitHub Repository URL:** https://github.com/AbuBakerAttique/squadron-goodfellow<br>
 **Submission Date:** `[YYYY-MM-DD]`  
 
 ---
@@ -17,7 +17,7 @@
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | Abdul Jalil Memon | `tot_solver.py` | PASS / VERIFIED (harness + 8 self-checks + Game-of-24 benchmark) |
 | **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | `[PASS / VERIFIED]` |
-| **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | `[PASS / VERIFIED]` |
+| **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | Part 3 checks PASS; author review/sign-off pending |
 | **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | `[PASS / VERIFIED]` |
 
 ---
@@ -124,14 +124,73 @@ graph TD
 - **Protocol Analysis:** `[Explain how changing c_puct from 0.5 to 2.5 shifts the balance between exploiting high-Q branches and exploring high-prior unvisited thoughts.]`
 
 ### Section C — Data & Payload Specialist (`prm_evaluator.py`)
-- **Empirical Comparison: Outcome Reward Model (ORM) vs. Process Reward Model (PRM):**
 
-| Trajectory Type | ORM Terminal Score | PRM (`min`) | PRM (`prod`) | PRM (`geometric_mean`) | Math-Shepherd Soft Label ($M=4$) |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Rigorous Kerr Proof** | `1.00` | `0.940` | `0.831` | `0.940` | `0.75` |
-| **False-Positive Sign Trap** | `1.00 (Trap!)` | `0.120` | `0.106` | `0.473` | `[Insert]` |
+**Officer:** Abubaker Attique<br>
+**Verification date:** 18 November 2026<br>
+**Run from the repository root:** `python3 -B mission-07/prm_evaluator.py`
 
-- **Data Analysis:** `[Explain why ORM fails on false-positive intermediate reasoning errors, why product reduction penalizes longer chains, and how Math-Shepherd estimates step quality without human annotations.]`
+#### Implementation and scope
+
+The instructor supplied working baseline formulas and a marker-based scoring fixture. This implementation retains its interfaces and scoring weights: `[FLAWED]` or `SIGN_ERROR` gives 0.12, `[MINOR_DRIFT]` gives 0.55, and an unmarked step gives 0.94. A flaw takes precedence when both markers occur. Minimum and product aggregate these step scores; the geometric mean uses `exp(sum(log(score)) / T)` to avoid underflow from multiplying many small values first. Empty chains retain the starter convention of 0.0.
+
+This is an educational, rule-based PRM surrogate. It does not independently validate arbitrary algebra or a Kerr geodesic proof. A high default score means only that no recognised flaw marker was found. The scores are not calibrated probabilities, so their product should be interpreted as a ranking score rather than an empirically established joint probability. The baseline ORM only checks for the expected substring in the final step; this is also a simplified evaluator.
+
+#### ORM versus PRM results
+
+These are outputs from the deterministic verification fixtures, not results from live LLM sampling. The first two rows retain the instructor's illustrative navigation chains; the last two use explicit algebra.
+
+| Trajectory | ORM | PRM (`min`) | PRM (`prod`) | PRM (`geometric_mean`) |
+|---|---:|---:|---:|---:|
+| Instructor unmarked navigation chain | 1.00 | 0.940 | 0.831 | 0.940 |
+| Instructor annotated sign trap | 1.00 | 0.120 | 0.106 | 0.473 |
+| Valid algebra: `x + 3 = 7 -> x = 7 - 3 -> x = 4` | 1.00 | 0.940 | 0.831 | 0.940 |
+| Two annotated sign errors: `x + 3 = 7 -> x = 3 - 7 = -4 -> x = -(-4) = 4` | 1.00 | 0.120 | 0.014 | 0.238 |
+
+The algebra trap reverses the subtraction, then negates the incorrect result without justification. Its final answer is accidentally correct, so ORM awards 1.0. PRM assigns low scores to the two annotated invalid transitions. This demonstrates the distinction between outcome and process evaluation, with the important limitation that the flaw annotations supply the error detection in this fixture.
+
+#### Length sensitivity
+
+| Number of unmarked steps | Minimum | Product | Geometric mean |
+|---|---:|---:|---:|
+| 3 | 0.940000 | 0.830584 | 0.940000 |
+| 10 | 0.940000 | 0.538615 | 0.940000 |
+| 100 | 0.940000 | 0.002055 | 0.940000 |
+
+Multiplying scores below one penalises longer trajectories even when per-step quality stays constant. The minimum identifies the weakest step, while the geometric mean normalises for length. Geometric mean is not a complete defence against inserting many high-scoring filler steps around a flawed step; that defence belongs to the Security Sentinel's work. A separate 1,000-step test with scores of 0.12 underflows to zero for the product, but the log-space geometric mean correctly remains 0.12.
+
+#### Math-Shepherd-style labels
+
+The function consumes supplied final answers from completions of a fixed intermediate step. It returns the fraction exactly matching the ground truth as the soft label, and 1.0 if at least one answer matches as the hard label. The caller is responsible for generating completions conditioned on that step; the function itself does not sample a model.
+
+| Fixture | Supplied answers (km/s) | Correct / M | Soft label | Hard label |
+|---|---|---:|---:|---:|
+| Instructor unmarked step | 24.0, 24.0, 22.5, 24.0 | 3 / 4 | 0.75 | 1.0 |
+| Annotated trap step | 22.5, 24.0, 23.0, 21.0 | 1 / 4 | 0.25 | 1.0 |
+
+Both use ground truth `24.0 km/s`. These are hand-specified simulated completion fixtures, not measured success rates of an LLM. They show how answer-based supervision can estimate completion success without manually labelling every step, but still needs a ground-truth answer. A successful completion can recover from a mistake or obtain the right answer by cancellation; therefore neither label proves the intermediate step logically valid. Four completions would also be a small statistical sample in a real experiment. For zero completions, the starter returns both labels as zero by convention; this represents no evidence, not demonstrated invalidity.
+
+#### Verification evidence
+
+The harness checks both benchmark traps, mixed-score reductions, empty and single-step inputs, flaw-marker precedence, all-correct/all-wrong/empty completion lists, and long-chain numerical stability. All checks passed with the following output:
+
+```text
+=== Subsystem 07 (Part 3): PRM vs. ORM & Math-Shepherd Verification ===
+Rigorous Chain       | ORM=1.00 | PRM(min)=0.940 | PRM(prod)=0.831 | PRM(geo)=0.940
+False-Positive Trap  | ORM=1.00 | PRM(min)=0.120 | PRM(prod)=0.106 | PRM(geo)=0.473
+Math-Shepherd Step Estimation (M=4 rollouts): {'soft_label': 0.75, 'hard_label': 1.0}
+Trap step labels (M=4 supplied simulated rollouts): {'soft_label': 0.25, 'hard_label': 1.0}
+Valid algebra        | ORM=1.00 | PRM(min)=0.940 | PRM(prod)=0.831 | PRM(geo)=0.940
+Double-sign trap     | ORM=1.00 | PRM(min)=0.120 | PRM(prod)=0.014 | PRM(geo)=0.238
+Long-chain check (1000 scores of 0.12): product=0.0; geometric_mean=0.120
+Length comparison (all unmarked scores are 0.94):
+  T=  3 | min=0.940000 | prod=0.830584 | geo=0.940000
+  T= 10 | min=0.940000 | prod=0.538615 | geo=0.940000
+  T=100 | min=0.940000 | prod=0.002055 | geo=0.940000
+[OK] Reduction, empty/single-step, marker precedence and rollout boundary checks passed.
+[OK] Part 3 (Data & Payload Specialist) verification passed.
+```
+
+**AI assistance:** Codex assisted with implementation changes, verification checks and drafting this section from the executed output. Author review and sign-off are pending. This section verifies Part 3 only; the squad's integration results and final reflection remain separate tasks.
 
 ### Section D — Security & Ethics Sentinel (`horizon_pruner.py`)
 - **Event Horizon Pruning & Ship Anomaly 07 Defense Log:**
