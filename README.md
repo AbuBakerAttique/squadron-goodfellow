@@ -7,7 +7,7 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 
 ## Team Members and Roles
 
-| Member | Missions 1–2 Role | Missions 3–7 Role |
+| Member | Missions 1–2 Role | Missions 3–11 Role |
 |---|---|---|
 | Abubaker Attique | Historical Archivist | Data & Payload Specialist |
 | Fatima Siddiqa | Protocol Specialist | Communications & Protocol Officer |
@@ -25,6 +25,10 @@ Team repository for **Conversational Artificial Intelligence — Winter Semester
 | 05 | Dual-Path GraphRAG, Hybrid Search & The Google NotebookLM Grounding Lab | [Mission 5](mission-05/) |
 | 06 | The Autonomous Warp State Machine & Deliberation Loop | [Mission 6](mission-06/) |
 | 07 | Sagittarius A* — The Gravitational Search Horizon & Process Reward Evaluator | [Mission 7](mission-07/) |
+| 08 | Cygnus X-1 — The ReWOO-Reflexion Surgeon & MemGPT Virtual Pager | [Mission 8](mission-08/) |
+| 09 | The Tarantula Relay & The TorchTPU Epistemic Router | [Mission 9](mission-09/) |
+| 10 | The Void Mirror, Semantic Entropy & The Dual-Defense Shield Wall | [Mission 10](mission-10/) |
+| 11 | Andromeda Swarm Nexus — Multi-Agent Topologies, Handoff Contracts & Deadlock Defense | [Mission 11](mission-11/) |
 
 Each mission folder contains its own briefing and instructions.
 
@@ -52,7 +56,7 @@ The following general instructions are reproduced from the [instructor’s READM
 
 ## Mission Sign-offs
 
-Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Missions 6 and 7 are awaiting sign-off. Each officer confirms their own approval before submission.
+Mission 1 approvals are preserved from the previous root README. Mission 2 boxes reflect the current checklist in its mission README; they do not establish completion of the integrated solution or portal submission. Missions 7–11 are awaiting sign-off. Each officer confirms their own approval before submission.
 
 ### Mission 01
 
@@ -97,6 +101,34 @@ Mission 1 approvals are preserved from the previous root README. Mission 2 boxes
 - [X] Abdul Jalil Memon — Systems Architect / Lead Engineer
 
 ### Mission 07
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 08
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 09
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 10
+
+- [ ] Abubaker Attique — Data & Payload Specialist
+- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [ ] Syeda Manahil Javed — Security & Ethics Sentinel
+- [ ] Abdul Jalil Memon — Systems Architect / Lead Engineer
+
+### Mission 11
 
 - [ ] Abubaker Attique — Data & Payload Specialist
 - [ ] Fatima Siddiqa — Communications & Protocol Officer
