@@ -28,14 +28,17 @@ class OutcomeRewardEvaluator:
 
 class ProcessRewardEvaluator:
     """
-    Process Reward Model (PRM): Evaluates the logical validity of every intermediate reasoning step z_t,
-    aggregates trajectory scores (min, prod, geometric_mean), and computes Math-Shepherd rollout labels.
+    Educational PRM surrogate using the instructor's annotated-step scoring rules.
+
+    Scores are heuristic weights, not calibrated probabilities or a trained model's
+    judgement. Unmarked incorrect mathematics can receive the default high score.
+    Public method signatures are retained for the other mission modules.
     """
 
     def step_score(self, step: str) -> float:
         """
-        TODO (Data Specialist): Score an individual reasoning step in (0.0, 1.0].
-        Penalize steps containing '[FLAWED]' or invalid sign cancellations, and reward verified deductions.
+        Score supplied annotations in (0.0, 1.0]. Explicit flaw markers take
+        precedence over minor drift. The default does not prove a step correct.
         """
         if "[FLAWED]" in step or "SIGN_ERROR" in step:
             return 0.12
@@ -48,7 +51,7 @@ class ProcessRewardEvaluator:
 
     def aggregate_trajectory_min(self, steps: List[str]) -> float:
         """
-        TODO (Data Specialist): Weakest-link reduction: min_{t=1..T} r_t.
+        Weakest-link reduction: min_{t=1..T} r_t. Empty chains score zero.
         """
         if not steps:
             return 0.0
@@ -56,7 +59,8 @@ class ProcessRewardEvaluator:
 
     def aggregate_trajectory_prod(self, steps: List[str]) -> float:
         """
-        TODO (Data Specialist): Joint validity reduction: prod_{t=1..T} r_t.
+        Product reduction: prod_{t=1..T} r_t. Empty chains score zero.
+        This is a ranking heuristic here, not an established joint probability.
         """
         if not steps:
             return 0.0
@@ -67,12 +71,13 @@ class ProcessRewardEvaluator:
 
     def aggregate_trajectory_geometric_mean(self, steps: List[str]) -> float:
         """
-        TODO (Data Specialist): Length-normalized geometric mean: (prod_{t=1..T} r_t)^(1/T).
+        Length-normalized geometric mean computed in log space.
+        Taking logs before multiplication avoids product underflow on long chains.
         """
         if not steps:
             return 0.0
-        prod = self.aggregate_trajectory_prod(steps)
-        return prod ** (1.0 / len(steps))
+        scores = self.score_all_steps(steps)
+        return math.exp(math.fsum(math.log(r) for r in scores) / len(scores))
 
     def math_shepherd_estimation(
         self,
@@ -81,7 +86,10 @@ class ProcessRewardEvaluator:
         ground_truth_answer: str,
     ) -> Dict[str, float]:
         """
-        TODO (Data Specialist): Implement Math-Shepherd (Wang et al., 2024) step supervision estimation.
+        Estimate Math-Shepherd-style labels from supplied simulated completions.
+        The caller must supply answers conditioned on `intermediate_step`; this
+        function counts exact matches and does not generate or verify rollouts.
+        An empty list returns zeros by the starter convention (no evidence).
         Given M Monte Carlo completion answers `rollout_final_answers` sampled from `intermediate_step`:
           - soft_label = (1 / M) * sum(1 for ans in rollout_final_answers if ans == ground_truth_answer)
           - hard_label = 1.0 if any rollout matches ground_truth_answer else 0.0
@@ -103,7 +111,7 @@ if __name__ == "__main__":
     orm = OutcomeRewardEvaluator(expected_final_marker="v_esc = 24.0 km/s")
     prm = ProcessRewardEvaluator()
 
-    # Trajectory 1: Rigorous Kerr Geodesic Proof
+    # Instructor-provided illustrative chain; not a verified Kerr derivation.
     valid_chain = [
         "Step 1: Set metric tensor g_uv for Kerr spin parameter a = 0.9M",
         "Step 2: Integrate conserved orbital energy E and angular momentum L_z",
@@ -138,4 +146,62 @@ if __name__ == "__main__":
     )
     print(f"Math-Shepherd Step Estimation (M=4 rollouts): {shepherd}")
     assert abs(shepherd["soft_label"] - 0.75) < 1e-6 and shepherd["hard_label"] == 1.0
+    # Four supplied simulated answers for the trap; no live model was sampled.
+    trap_labels = prm.math_shepherd_estimation(
+        false_positive_chain[1],
+        ["22.5 km/s", "24.0 km/s", "23.0 km/s", "21.0 km/s"],
+        "24.0 km/s",
+    )
+    assert trap_labels == {"soft_label": 0.25, "hard_label": 1.0}
+    print(f"Trap step labels (M=4 supplied simulated rollouts): {trap_labels}")
+
+    # An explicit algebraic example: two illegal sign changes cancel.
+    # Correct: x + 3 = 7 -> x = 7 - 3 -> x = 4.
+    algebra_valid = ["x + 3 = 7", "x = 7 - 3", "x = 4"]
+    algebra_trap = [
+        "x + 3 = 7",
+        "[FLAWED] SIGN_ERROR: x = 3 - 7 = -4",
+        "[FLAWED] SIGN_ERROR: x = -(-4) = 4; final x = 4",
+    ]
+    algebra_orm = OutcomeRewardEvaluator(expected_final_marker="x = 4")
+    for label, chain in [("Valid algebra", algebra_valid), ("Double-sign trap", algebra_trap)]:
+        print(
+            f"{label:20s} | ORM={algebra_orm.score_trajectory(chain):.2f} | "
+            f"PRM(min)={prm.aggregate_trajectory_min(chain):.3f} | "
+            f"PRM(prod)={prm.aggregate_trajectory_prod(chain):.3f} | "
+            f"PRM(geo)={prm.aggregate_trajectory_geometric_mean(chain):.3f}"
+        )
+    assert algebra_orm.score_trajectory(algebra_trap) == 1.0
+    assert prm.aggregate_trajectory_min(algebra_trap) == 0.12
+
+    # Check the three reductions against independently calculated fixture values.
+    mixed = ["normal", "[MINOR_DRIFT]", "[FLAWED]"]
+    assert prm.aggregate_trajectory_min(mixed) == 0.12
+    assert math.isclose(prm.aggregate_trajectory_prod(mixed), 0.06204)
+    assert math.isclose(prm.aggregate_trajectory_geometric_mean(mixed), 0.06204 ** (1 / 3))
+    assert prm.step_score("[MINOR_DRIFT] SIGN_ERROR") == 0.12
+    for reducer in (prm.aggregate_trajectory_min, prm.aggregate_trajectory_prod,
+                    prm.aggregate_trajectory_geometric_mean):
+        assert reducer([]) == 0.0
+        assert math.isclose(reducer(["[MINOR_DRIFT]"]), 0.55)
+    assert orm.score_trajectory([]) == 0.0
+    assert orm.score_trajectory(["wrong final answer"]) == 0.0
+    for answers, expected in [([], (0.0, 0.0)), (["wrong"] * 4, (0.0, 0.0)),
+                              (["correct"] * 4, (1.0, 1.0))]:
+        labels = prm.math_shepherd_estimation("fixed step", answers, "correct")
+        assert (labels["soft_label"], labels["hard_label"]) == expected
+
+    # All steps have the same quality: geometric mean must stay 0.12 even
+    # when the product is too small to represent in a Python float.
+    long_chain = ["[FLAWED]"] * 1000
+    assert prm.aggregate_trajectory_prod(long_chain) == 0.0
+    assert math.isclose(prm.aggregate_trajectory_geometric_mean(long_chain), 0.12)
+    print("Long-chain check (1000 scores of 0.12): product=0.0; geometric_mean=0.120")
+    print("Length comparison (all unmarked scores are 0.94):")
+    for length in (3, 10, 100):
+        chain = ["unmarked step"] * length
+        print(f"  T={length:3d} | min={prm.aggregate_trajectory_min(chain):.6f} | "
+              f"prod={prm.aggregate_trajectory_prod(chain):.6f} | "
+              f"geo={prm.aggregate_trajectory_geometric_mean(chain):.6f}")
+    print("[OK] Reduction, empty/single-step, marker precedence and rollout boundary checks passed.")
     print("[OK] Part 3 (Data & Payload Specialist) verification passed.")
