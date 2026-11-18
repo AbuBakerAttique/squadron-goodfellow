@@ -3,8 +3,8 @@
 **Course:** Conversational AI (WS 2026/27) — Week 8: Core Agentic Design Patterns & State Memory Systems  
 **Sector Waypoint:** `SEC-08-CYG` (Cygnus X-1 Stellar-Mass Black Hole & Veil Nebula)  
 **AURA Subsystem:** Subsystem 08 — ReWOO DAG Planner, Reflexion Surgeon & MemGPT Virtual Pager  
-**Squadron Name:** `[Insert Squadron / Team Name]`  
-**Public GitHub Repository URL:** `[Insert https://github.com/<your-org>/<your-repo>]`  
+**Squadron Name:** Squadron Goodfellow<br>
+**Public GitHub Repository URL:** https://github.com/AbuBakerAttique/squadron-goodfellow<br>
 **Submission Date:** `[YYYY-MM-DD]`  
 
 ---
@@ -17,7 +17,7 @@
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | `[Insert Name]` | `rewoo_planner.py` | `[PASS / VERIFIED]` |
 | **Communications & Protocol Officer** | `[Insert Name]` | `reflexion_surgeon.py` | `[PASS / VERIFIED]` |
-| **Data & Payload Specialist** | `[Insert Name]` | `memgpt_pager.py` | `[PASS / VERIFIED]` |
+| **Data & Payload Specialist** | Abubaker Attique | `memgpt_pager.py` | Part 3 checks PASS; author review/sign-off pending |
 | **Security & Ethics Sentinel** | `[Insert Name]` | `sandbox_guardian.py` | `[PASS / VERIFIED]` |
 
 ---
@@ -116,19 +116,69 @@ graph TD
 - **Protocol Analysis:** `[Explain why Huang et al. (2023) found that intrinsic self-correction fails without an external oracle, and how unit-test grounding + SHA-256 cycle detection guarantee convergence.]`
 
 ### Section C — Data & Payload Specialist (`memgpt_pager.py`)
-- **MemGPT Context Pressure Interrupt Log ($\tau_{\text{warn}} = 0.70$):**
-  - Token Budget Configured: `[e.g., 1000 tokens]`
-  - Interrupt Triggered At: `[e.g., 816/1000 tokens (81.6%)]`
-  - Eviction Action: `[e.g., Evicted 2 oldest FIFO messages into Archival Storage node evict_1]`
-- **Generative Agents Tri-Factor Retrieval $S(m, q)$ Table ($\gamma = 0.99$):**
 
-| Archival Node ID | Recency $R(m) = \gamma^{\Delta t}$ | Normalized Importance $\hat{I}(m)$ | Cosine Similarity $\text{Sim}(m, q)$ | Total Score $S(m, q)$ | Rank |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **`mem_telemetry`** | `0.9415` | `0.8500` | `0.9897` | `2.7812` | **#1** |
-| **`mem_safety`** | `0.6173` | `1.0000` | `0.9974` | `2.6147` | **#2** |
-| **`mem_chatter`** | `0.9900` | `0.1500` | `0.4086` | `1.5486` | #3 |
+**Officer:** Abubaker Attique<br>
+**Verified:** 18 November 2026<br>
+**Command from repository root:** `python3 -B mission-08/memgpt_pager.py`
 
-- **Data Analysis:** `[Explain why combining Importance and Relevance prevents recent low-value chatter from crowding out critical safety directives.]`
+#### Implementation and pressure policy
+
+The instructor's baseline interfaces and tri-factor formula are retained. Core-memory append and replacement now check pressure automatically, as does enqueuing a message. At or above 70% usage, the pager records a `memory_pressure_warning` and archives the oldest half of the FIFO queue in order. Odd queue lengths round down, with a minimum of one message. If a batch does not relieve pressure, the pager repeats oldest-half eviction until usage is below the threshold or the queue is empty. This repeat policy extends the single-batch requirement to handle oversized messages.
+
+Core memory is preserved. If it alone reaches the warning threshold, the pager reports `UNRESOLVED_MEMORY_PRESSURE`; it does not invent an empty archive entry or claim that usage has been reduced. The caller must shorten core memory or increase the budget. Archive IDs are unique, duplicate insertions are rejected, and invalid token counts, retrieval limits and embedding dimensions raise errors.
+
+#### Measured pressure example
+
+- Token budget: **1,000**; warning threshold: **70%**.
+- Core memory: **10 estimated tokens**; four queued messages: **200 tokens each**.
+- Warning issued at **810/1,000 (81.0%)**, because pressure is checked after each complete message is added.
+- The oldest two messages (packets 0 and 1) were archived as **`evict_1`**.
+- Remaining active usage: **410/1,000 (41.0%)**, retaining packets 2 and 3 in order.
+- A separate boundary test confirmed that exactly **70/100** triggers the warning, whereas **69/100** does not.
+
+#### Tri-factor retrieval results
+
+For query `[0.95, 0.30, 0.10]`, all three weights are 1.0 and decay is `gamma = 0.99`. Scores are `gamma ** hours_since_access + importance / 10 + cosine_similarity`. The table includes the newly archived summary; values are rounded from the actual run, replacing the template's illustrative values.
+
+| Archival node | Recency | Normalised importance | Cosine similarity | Total score | Rank |
+|---|---:|---:|---:|---:|---:|
+| `mem_telemetry` | 0.9415 | 0.8500 | 0.9853 | 2.7768 | 1 |
+| `mem_safety` | 0.6173 | 1.0000 | 0.9971 | 2.6143 | 2 |
+| `evict_1` | 1.0000 | 0.7500 | 0.7785 | 2.5285 | 3 |
+| `mem_chatter` | 0.9900 | 0.1500 | 0.4080 | 1.5480 | 4 |
+
+Recent chatter has high recency but weak importance and similarity, so it ranks below older safety information. Telemetry ranks first because its high relevance and importance combine with more recent access. This weighted ranking is not a guarantee that every critical directive is always retrieved; weights and embeddings affect the result, and hard safety rules should not depend solely on top-k retrieval.
+
+Search excludes nodes with `t_invalid` set, returns at most `top_k` results, and preserves insertion order for tied scores. `touch_on_access=True` resets the age of returned nodes only, after ranking. Zero-vector cosine similarity is defined as zero; mismatched dimensions are rejected instead of silently truncating vectors.
+
+#### Verification and limitations
+
+Checks cover the exact threshold, FIFO order, single oversized messages, repeated eviction, core-only pressure, core replacement, ranking, invalidated nodes, tie ordering, access timestamps, weighted scoring, zero/opposite vectors and invalid inputs. All passed.
+
+This is a deterministic teaching simulation: token usage is estimated as twice the word count unless explicit queue token counts are supplied. Archives are Python objects in memory, not durable disk storage. The consolidated summary concatenates message texts and roles; it is not an LLM-generated summary. The summary embedding `[0.5, 0.5, 0.5]` and importance 7.5 are instructor fixture values, so summary relevance is not semantically measured. The demo uses three-dimensional embeddings throughout. Ages are caller-supplied elapsed hours rather than a live clock, and validity filtering checks `t_invalid` rather than implementing a full temporal database. No LLM API or production MemGPT service was used.
+
+#### Captured Part 3 terminal output
+
+```text
+=== Subsystem 08 (Part 3): MemGPT Virtual Pager & Tri-Factor Retrieval Verification ===
+SYSTEM_INTERRUPT(memory_pressure_warning): usage=810/1000 (81.0%) >= 70%.
+Archived 2 oldest FIFO messages as evict_1; active usage=410/1000.
+
+Top-2 Retrieved Archival Memories for X-Ray Shield Query:
+  [mem_telemetry] S(m,q)=2.7768 | I=8.5 | dt=6.0h | X-ray flare harmonic filter locked to 6.4 keV iron K-alpha line.
+  [mem_safety] S(m,q)=2.6143 | I=10.0 | dt=48.0h | CRITICAL DIRECTIVE: Never drop magnetic shielding below 42% near Cygnus X-1 X-ray flares.
+
+Full retrieval table (unit weights; including flushed summary):
+1 mem_telemetry: rec=0.9415 imp=0.8500 cos=0.9853 total=2.7768
+2 mem_safety: rec=0.6173 imp=1.0000 cos=0.9971 total=2.6143
+3 evict_1: rec=1.0000 imp=0.7500 cos=0.7785 total=2.5285
+4 mem_chatter: rec=0.9900 imp=0.1500 cos=0.4080 total=1.5480
+[OK] Threshold, oldest-half eviction, oversized/empty FIFO and core pressure checks passed.
+[OK] Ranking, invalidation, access timestamps, cosine and input validation checks passed.
+[OK] Part 3 (Data & Payload Specialist) verification passed.
+```
+
+**AI assistance:** Codex assisted with the implementation changes, test execution and report drafting. Author review and sign-off are pending. This evidence covers Part 3 only; team integration and the final squad reflection remain to be completed together.
 
 ### Section D — Security & Ethics Sentinel (`sandbox_guardian.py`)
 - **AST Static Sandbox & MemoryGraft / A-MemGuard Audit Log:**
