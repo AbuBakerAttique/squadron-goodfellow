@@ -3,8 +3,8 @@
 **Course:** Conversational AI (WS 2026/27) — Week 7: Test-Time Compute & Reasoning Search Paradigms  
 **Sector Waypoint:** `SEC-07-SGR` (Sagittarius A* Supermassive Black Hole)  
 **AURA Subsystem:** Subsystem 07 — Gravitational Search Horizon & Process Reward Evaluator  
-**Squadron Name:** `[Insert Squadron / Team Name]`  
-**Public GitHub Repository URL:** `[Insert https://github.com/<your-org>/<your-repo>]`  
+**Squadron Name:** Squadron Goodfellow  
+**Public GitHub Repository URL:** https://github.com/AbuBakerAttique/squadron-goodfellow  
 **Submission Date:** `[YYYY-MM-DD]`  
 
 ---
@@ -15,10 +15,10 @@
 
 | Station Role | Cadet Full Name | Deliverable File | Verification Status |
 | :--- | :--- | :--- | :--- |
-| **Systems Architect** | `[Insert Name]` | `tot_solver.py` | `[PASS / VERIFIED]` |
-| **Communications & Protocol Officer** | `[Insert Name]` | `mcts_protocol.py` | `[PASS / VERIFIED]` |
-| **Data & Payload Specialist** | `[Insert Name]` | `prm_evaluator.py` | `[PASS / VERIFIED]` |
-| **Security & Ethics Sentinel** | `[Insert Name]` | `horizon_pruner.py` | `[PASS / VERIFIED]` |
+| **Systems Architect** | Abdul Jalil Memon | `tot_solver.py` | PASS / VERIFIED (harness + 8 self-checks + Game-of-24 benchmark) |
+| **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | `[PASS / VERIFIED]` |
+| **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | `[PASS / VERIFIED]` |
+| **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | `[PASS / VERIFIED]` |
 
 ---
 
@@ -84,7 +84,7 @@ graph TD
 ```
 
 **Architectural Summary:**
-- `[Write 3–4 sentences explaining how your four modules connect and how test-time compute budget is managed across the pipeline.]`
+- The two search front-ends, `TreeOfThoughtsSolver` (Part 1) and `MCTSEngine` (Part 2), never judge reasoning themselves: every candidate step $z_t$ they create is scored by a value callback, which is the `ProcessRewardEvaluator` (Part 3). The `EventHorizonPruner` (Part 4) then adjusts that score for reward hacking before the search uses it. In ToT, a step whose adjusted score falls below the prune threshold is marked `is_pruned` and never expanded, and the trajectory score is the weakest link ($\min$), matching the PRM `min` reduction. In MCTS, the same adjusted score becomes the rollout reward that is backpropagated into $Q(s,a)$. Test-time compute is metered in one place: one *expansion* means one generated thought scored by one verifier call, and `max_expansions` is a hard cap. Pruning, beam width $B$ and early stopping on a solved node decide where that fixed budget is spent; they do not add to it.
 
 ---
 
@@ -92,11 +92,26 @@ graph TD
 
 ### Section A — Systems Architect (`tot_solver.py`)
 - **ToT-BFS vs. ToT-DFS Traversal Comparison:**
-  - `max_expansions` budget configured: `[e.g., 12]`
-  - `beam_width` ($B$) configured: `[e.g., 2]`
-  - `ToT-BFS` expansions used & terminal score: `[Insert results]`
-  - `ToT-DFS` expansions used & terminal score: `[Insert results]`
-- **Architectural Analysis:** `[Explain when Breadth-First Beam Search outperforms Depth-First Backtracking and how beam width B affects KV-cache memory and token cost.]`
+  - `max_expansions` budget configured: `12`
+  - `beam_width` ($B$) configured: `2`, `prune_threshold` $v_{\text{th}} = 0.45$, `max_depth` $= 3$
+  - `ToT-BFS` expansions used & terminal score: **5 / 12** expansions, 2 branches pruned; reached `[GOAL]` with trajectory score (min-link) **0.85** and final step score 0.98
+  - `ToT-DFS` expansions used & terminal score: **5 / 12** expansions, 2 branches pruned, 2 backtracks; reached the same `[GOAL]` trajectory, score **0.85** (final step 0.98)
+  - Winning trajectory (both): `13 - 9 = 4` → `10 - 4 = 6` → `4 * 6 = 24`. Both dead ends, `10 + 13 = 23` and `4 + 4 = 8` (score 0.25), were pruned before expansion.
+
+- **Budget-scaling experiment (real Game-of-24 search).** On the 5-node mock tree both searches look identical, so `tot_solver.py` also runs a real benchmark. The generator enumerates every legal arithmetic step on 12 solvable puzzles (about 30 children at the root). The value model stands in for an LLM value prompt (sure / likely / impossible): it knows whether 24 is still reachable but adds a deterministic ±0.35 noise, so it sometimes prunes a good branch and sometimes trusts a bad one. Cells show puzzles solved / 12, with mean expansions actually used in brackets:
+
+| Method | Budget 10 | Budget 25 | Budget 50 | Budget 100 | Budget 200 |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| ToT-BFS $B=1$ | 0/12 (10) | 2/12 (25) | 5/12 (39) | 10/12 (42) | 10/12 (42) |
+| ToT-BFS $B=2$ | 0/12 (10) | 0/12 (25) | 3/12 (46) | 10/12 (61) | 10/12 (61) |
+| ToT-BFS $B=4$ | 0/12 (10) | 0/12 (25) | 2/12 (50) | 7/12 (88) | 10/12 (98) |
+| ToT-DFS | 0/12 (10) | 2/12 (25) | 5/12 (42) | 10/12 (53) | **11/12** (62) |
+
+- **Architectural Analysis:**
+  - **Under a fixed budget, breadth is expensive.** BFS must score every child of every beam node before it can go one level deeper. With about 30 children per node and $B=4$, most of a 50-expansion budget goes on layers 1–2, so it solves only 2/12 puzzles, against 5/12 for $B=1$ and for DFS. DFS spends budget only along the path it is following, so it matches the best beam at every budget. At 200 expansions it is the only method that solves 11/12: when the noisy value model ranked a dead branch first, DFS backtracked into a sibling that a fixed beam had already cut.
+  - **When BFS outperforms DFS:** our benchmark does not show BFS winning on accuracy per expansion, and we report that as measured. BFS is still the better architecture in three cases. First, when the value model ranks siblings reliably at shallow depth, so the top-$B$ cut is safe. Second, when solutions all lie at a similar, shallow depth. Third, when wall-clock latency matters more than total FLOPs: all $B \times k$ candidates in a layer are independent and can be sent to the GPU as one batch, whereas DFS is strictly sequential, because each call depends on the previous verdict. Wider beams also make search more robust to evaluator noise when budget is plentiful: $B=4$ reaches 10/12 at 200, but needs about 2.3× the expansions that $B=1$ needs for the same score.
+  - **Beam width, KV-cache and token cost.** Each live branch needs its own KV-cache. The approximate size is $\text{mem} \approx B \cdot L_{\text{ctx}} \cdot 2 \cdot n_{\text{layers}} \cdot n_{\text{kv\_heads}} \cdot d_{\text{head}} \cdot \text{bytes}$, the same per-token cost we cut with GQA in Mission 03. ToT-BFS therefore holds $B$ caches (up to $B\cdot k$ while scoring a layer), while ToT-DFS holds a single root-to-leaf stack of at most $D$ thought contexts. Since all branches share the prompt prefix, prefix caching or paged attention lets the $B$ branches share the prompt's KV blocks; only the divergent thought suffixes need copying. Token cost grows roughly as $\text{expansions} \times (\text{tokens per thought} + \text{tokens per value prompt})$, so `max_expansions` is effectively a hard dollar and latency cap. Pruning below $v_{\text{th}}$ and stopping at the first solved node are the two levers that move that fixed budget toward productive branches.
+  - **Defects fixed in the starter.** These are covered by regression self-checks. (1) "Deepest node wins" returned a weak depth-3 branch (score 0.50) instead of a solved goal at depth 2; an optional `is_terminal_fn` now makes solved nodes win and stops the search early. (2) DFS compared absolute depth with `max_depth`, so a root with `depth != 0` was never searched. (3) Re-using an expanded root silently duplicated its children. (4) Invalid `beam_width`, `max_expansions` or threshold values were accepted.
 
 ### Section B — Communications & Protocol Officer (`mcts_protocol.py`)
 - **PUCT Selection Trace Table:**
