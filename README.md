@@ -103,7 +103,7 @@ Mission 1 approvals are preserved from the previous root README. Mission 2 boxes
 ### Mission 07
 
 - [X] Abubaker Attique — Data & Payload Specialist
-- [ ] Fatima Siddiqa — Communications & Protocol Officer
+- [X] Fatima Siddiqa — Communications & Protocol Officer
 - [ ] Syeda Manahil Javed — Security & Ethics Sentinel
 - [X] Abdul Jalil Memon — Systems Architect / Lead Engineer
 

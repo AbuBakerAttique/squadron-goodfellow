@@ -16,7 +16,7 @@
 | Station Role | Cadet Full Name | Deliverable File | Verification Status |
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | Abdul Jalil Memon | `tot_solver.py` | PASS / VERIFIED (harness + 8 self-checks + Game-of-24 benchmark) |
-| **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | `[PASS / VERIFIED]` |
+| **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | PASS / VERIFIED - completed on 21 November |
 | **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | PASS / VERIFIED — completed and signed off by Abubaker Attique on 19 November 2026 |
 | **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | `[PASS / VERIFIED]` |
 
@@ -114,14 +114,84 @@ graph TD
   - **Defects fixed in the starter.** These are covered by regression self-checks. (1) "Deepest node wins" returned a weak depth-3 branch (score 0.50) instead of a solved goal at depth 2; an optional `is_terminal_fn` now makes solved nodes win and stops the search early. (2) DFS compared absolute depth with `max_depth`, so a root with `depth != 0` was never searched. (3) Re-using an expanded root silently duplicated its children. (4) Invalid `beam_width`, `max_expansions` or threshold values were accepted.
 
 ### Section B — Communications & Protocol Officer (`mcts_protocol.py`)
-- **PUCT Selection Trace Table:**
 
-| Candidate Branch | Empirical Value $Q(s,a)$ | Prior $P_\theta(a\mid s)$ | Parent Visits $N(s)$ | Child Visits $N(s,a)$ | Exploration Bonus $U(s,a)$ ($c_{\text{puct}}=1.5$) | Total $\text{PUCT}(s,a)$ | Selected? |
+**Officer:** Fatima Siddiqa<br>
+**Verification date:** 21 November 2026<br>
+**Run from the repository root:** `python mcts_protocol.py`
+
+#### Implementation and scope
+
+The MCTS engine implements the four canonical phases of Monte Carlo Tree Search guided by the PUCT selection formula. `MCTSNode` stores state, policy prior $P_\theta(a \mid s)$, visit count $N(s,a)$, cumulative reward $W(s,a)$, parent/children links, and an `is_terminal` flag. The empirical Q-value is $Q(s,a) = W(s,a) / N(s,a)$ when $N > 0$, else $0.0$ — so unvisited nodes are ranked purely by their exploration bonus, ensuring they are tried before exploitation takes over.
+
+The `run_search` orchestrator executes $N$ full MCTS iterations (select → expand → simulate → backpropagate). After expansion, the **highest-prior** child is selected for simulation (the LLM's own confidence ranking), which is more principled than relying on arbitrary dict iteration order. Dead-end leaves (where the proposer returns no priors) are still **evaluated by the rollout function** rather than scored zero — a leaf with no further expansions may still represent a valuable terminal state. An optional `is_terminal_fn` callback marks solved nodes during expansion so the terminal branch in the search loop is exercised.
+
+#### PUCT selection trace (starter verification)
+
+Hand-calculated reference values at $c_\text{puct} = 1.5$, root $N(s) = 16$:
+
+$$U(s,a) = c_\text{puct} \cdot P_\theta(a \mid s) \cdot \frac{\sqrt{N(s)}}{1 + N(s,a)}$$
+
+| Candidate Branch | $Q(s,a)$ | $P_\theta(a \mid s)$ | $N(s)$ | $N(s,a)$ | $U(s,a)$ | $\text{PUCT}(s,a)$ | Selected? |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Branch A** | `0.75` | `0.50` | `16` | `5` | `0.5000` | `1.2500` | No |
 | **Branch B** | `0.55` | `0.40` | `16` | `1` | `1.2000` | `1.7500` | **Yes** |
 
-- **Protocol Analysis:** `[Explain how changing c_puct from 0.5 to 2.5 shifts the balance between exploiting high-Q branches and exploring high-prior unvisited thoughts.]`
+Branch B has lower empirical reward ($Q = 0.55$ vs. $0.75$) but far fewer visits ($N = 1$ vs. $5$). The PUCT exploration bonus compensates: $U_B = 1.20 \gg U_A = 0.50$, pushing Branch B's total score above A's. This is exactly the exploration-exploitation tradeoff that PUCT enforces.
+
+#### PUCT sensitivity sweep across $c_\text{puct}$
+
+To demonstrate how $c_\text{puct}$ controls the exploitation-exploration balance, the sweep uses a different test scenario — root $N = 20$, Branch A ($Q = 0.80$, $N = 8$, $P = 0.35$: well-visited, high reward, modest prior) vs. Branch B ($Q = 0.50$, $N = 4$, $P = 0.65$: under-visited, lower reward, strong prior):
+
+| $c_\text{puct}$ | $\text{PUCT}(A)$ | $Q(A)$ | $U(A)$ | $\text{PUCT}(B)$ | $Q(B)$ | $U(B)$ | Selected |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.5 | 0.8870 | 0.8000 | 0.0870 | 0.7907 | 0.5000 | 0.2907 | **A** |
+| 1.0 | 0.9739 | 0.8000 | 0.1739 | 1.0814 | 0.5000 | 0.5814 | **B** |
+| 1.5 | 1.0609 | 0.8000 | 0.2609 | 1.3721 | 0.5000 | 0.8721 | **B** |
+| 2.0 | 1.1478 | 0.8000 | 0.3478 | 1.6628 | 0.5000 | 1.1628 | **B** |
+| 2.5 | 1.2348 | 0.8000 | 0.4348 | 1.9534 | 0.5000 | 1.4534 | **B** |
+
+The crossover occurs at approximately $c_\text{puct} \approx 0.74$. Below this threshold, the $Q$-gap ($0.30$) outweighs the exploration bonus difference, so the engine greedily exploits Branch A's higher empirical reward. Above it, the exploration term for Branch B — amplified by its higher prior ($P = 0.65$) and lower visit count ($N = 4$) — more than compensates for its lower $Q$, shifting selection toward exploration.
+
+#### Full MCTS search demo (12 iterations)
+
+A 3-branch navigation tree with depth-2 sub-branches demonstrates the complete 4-phase cycle:
+
+| Direct Child of Root | Visits $N$ | $Q$-value | Prior $P$ |
+| :--- | :---: | :---: | :---: |
+| Path A: Prograde frame-dragging slingshot | 8 | 0.8400 | 0.50 |
+| Path B: Retrograde Penrose energy extraction | 4 | 0.6500 | 0.35 |
+| Path C: Direct radial plunge (DANGER) | 0 | 0.0000 | 0.15 |
+
+**Recommended path:** Path A (most visited, highest Q). The dangerous plunge path received zero visits — its low prior ($P = 0.15$) combined with the high rewards discovered along Paths A and B meant PUCT never selected it. The Q-values now faithfully reflect the evaluator's scores (Path A's children are worth 0.92 and 0.45, giving a blended Q of 0.84) rather than being washed out by zeros, thanks to the dead-end evaluation fix.
+
+#### Protocol analysis
+
+$c_\text{puct}$ acts as a temperature dial on the exploration-exploitation tradeoff:
+
+- **Low $c_\text{puct}$ (exploitation regime, $< 0.74$ in our sweep):** The $Q(s,a)$ term dominates selection. The engine behaves greedily, repeatedly revisiting the branch with the highest empirical reward. This converges fast when the first good branch found is globally optimal, but is brittle — if the best branch is discovered late, the engine may never try it because the visit-count penalty is too weak to overcome the Q-gap. In LLM reasoning, this risks committing to a plausible-looking but flawed chain of thought without exploring alternatives.
+
+- **High $c_\text{puct}$ (exploration regime, $> 1.5$):** The exploration bonus $U(s,a) = c_\text{puct} \cdot P(a|s) \cdot \sqrt{N(s)} / (1 + N(s,a))$ dominates. The engine spreads iterations across all children roughly in proportion to their policy priors, regardless of observed reward. This ensures broad coverage and prevents missing a high-value but initially unlucky branch, but wastes budget on unpromising paths that the LLM's prior already ranked low.
+
+- **Balanced $c_\text{puct}$ ($\approx 1.0$–$1.5$, standard in AlphaGo/AlphaZero):** Neither term dominates. Well-visited high-$Q$ branches continue to be exploited, while unvisited nodes with strong priors receive enough bonus to be tried. This is the regime where MCTS most effectively allocates test-time compute — concentrating budget on the most promising branches while maintaining enough diversity to escape local optima.
+
+The sweep confirms this quantitatively: at $c_\text{puct} = 0.5$, Branch A's $Q$-advantage of $+0.30$ cannot be overcome by exploration; at $c_\text{puct} = 1.0$, Branch B's exploration bonus ($U_B = 0.58$) already exceeds the $Q$-gap, shifting selection. The practical implication for LLM reasoning is that $c_\text{puct}$ should be tuned to the evaluator's noise level: a highly reliable PRM justifies lower $c_\text{puct}$ (trust the scores), while a noisy or uncalibrated evaluator requires higher $c_\text{puct}$ to maintain exploration breadth.
+
+#### Verification evidence
+
+The harness checks the starter PUCT values (1.25, 1.75), backpropagation correctness, and runs 12 self-checks covering zero-visit initialisation, ancestor chain updates, expansion parent links, reward clamping, tree traversal, error handling, trajectory reconstruction, Q-value fidelity, dead-end evaluation, and terminal marking. All passed:
+
+```text
+=== Subsystem 07 (Part 2): MCTS & PUCT Protocol Verification ===
+Branch A -> Q=0.75, N=5, P=0.50 | PUCT = 1.2500
+Branch B -> Q=0.55, N=1, P=0.40 | PUCT = 1.7500
+Selected Next Node for Expansion: Branch B: Retrograde Penrose Extraction
+[OK] Part 2 (Communications & Protocol Officer) verification passed.
+[OK] 12 self-checks passed (zero-visit, backprop accumulation, expansion links,
+     clamping, traversal, error handling, trajectory, run_search Q-values,
+     dead-end evaluation, terminal marking).
+[OK] PUCT sensitivity sweep: exploitation -> exploration crossover confirmed.
+[OK] MCTS demo: safe navigation path selected over dangerous plunge.
+```
 
 ### Section C — Data & Payload Specialist (`prm_evaluator.py`)
 
