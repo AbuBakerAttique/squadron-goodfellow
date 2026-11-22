@@ -356,10 +356,13 @@ By detecting suspicious steps early, the system can terminate unreliable branche
 
 This approach complements Tree-of-Thoughts and Monte Carlo Tree Search by reducing wasted exploration and supporting more reliable step-level verification.
 
-**Station D Sign-Off:** Syeda Manahil Javed — Security & Ethics Sentinel  
-**Deliverable:** `horizon_pruner.py`  
+**Station D Sign-Off:** Syeda Manahil Javed — Security & Ethics Sentinel
+
+**Deliverable:** `horizon_pruner.py`
+
 **Verification:** Individual Part 4 tests passed; unified squadron integration pending.
-----
+
+---
 
 ## 4. End-to-End Verification Terminal Output
 
