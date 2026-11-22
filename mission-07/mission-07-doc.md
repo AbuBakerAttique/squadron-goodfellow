@@ -5,7 +5,7 @@
 **AURA Subsystem:** Subsystem 07 — Gravitational Search Horizon & Process Reward Evaluator  
 **Squadron Name:** Squadron Goodfellow<br>
 **Public GitHub Repository URL:** https://github.com/AbuBakerAttique/squadron-goodfellow<br>
-**Submission Date:** 2026-11-19  
+**Submission Date:** 2026-11-22  
 
 ---
 
@@ -360,7 +360,7 @@ This approach complements Tree-of-Thoughts and Monte Carlo Tree Search by reduci
 
 **Deliverable:** `horizon_pruner.py`
 
-**Verification:** Individual Part 4 tests passed; unified squadron integration pending.
+**Verification:** Individual Part 4 tests passed; unified squadron integration verified on 22 November 2026 (all four modules pass — see Section 4).
 
 ---
 
@@ -369,7 +369,81 @@ This approach complements Tree-of-Thoughts and Monte Carlo Tree Search by reduci
 Paste the terminal output from running all four verification suites (`python tot_solver.py`, `python mcts_protocol.py`, `python prm_evaluator.py`, and `python horizon_pruner.py`):
 
 ```text
-[Paste your terminal verification output here]
+$ python tot_solver.py
+=== Subsystem 07 (Part 1): Tree-of-Thoughts Solver Verification ===
+[ToT-BFS] Expansions Used: 5/12 | Pruned: 2
+[ToT-BFS] Best Terminal Score: 0.85 (last step 0.98)
+[ToT-BFS] Winning Trajectory: Prompt: Synthesize 24.0 km/s from [4, 9, 10, 13] -> Step 1A: 13 - 9 = 4 (Remaining: [4, 4, 10]) [VALID] -> Step 2A: 10 - 4 = 6 (Remaining: [4, 6]) [OPTIMAL] -> Step 3A: 4 * 6 = 24.0 km/s -> Escape Geodesic Locked! [GOAL]
+[ToT-DFS] Expansions Used: 5/12 | Pruned: 2 | Backtracks: 2
+[ToT-DFS] Best Terminal Score: 0.85 (last step 0.98)
+[ToT-DFS] Winning Trajectory: Prompt: Synthesize 24.0 km/s from [4, 9, 10, 13] -> Step 1A: 13 - 9 = 4 (Remaining: [4, 4, 10]) [VALID] -> Step 2A: 10 - 4 = 6 (Remaining: [4, 6]) [OPTIMAL] -> Step 3A: 4 * 6 = 24.0 km/s -> Escape Geodesic Locked! [GOAL]
+[OK] Part 1 (Systems Architect) verification passed.
+[OK] 8 self-checks passed (goal preference, relative depth, root reuse, budget, beam width, backtracking, pruning, config validation).
+
+=== Game-of-24 benchmark: 12 solvable puzzles, depth 3, prune_threshold=0.45, value-model noise +/-0.35 ===
+solved/total (mean expansions used)
+method               budget 10       budget 25       budget 50      budget 100      budget 200
+----------------------------------------------------------------------------------------------
+ToT-BFS B=1          0/12 (10)       2/12 (25)       5/12 (39)      10/12 (42)      10/12 (42)
+ToT-BFS B=2          0/12 (10)       0/12 (25)       3/12 (46)      10/12 (61)      10/12 (61)
+ToT-BFS B=4          0/12 (10)       0/12 (25)       2/12 (50)       7/12 (88)      10/12 (98)
+ToT-DFS              0/12 (10)       2/12 (25)       5/12 (42)      10/12 (53)      11/12 (62)
+
+$ python mcts_protocol.py
+=== Subsystem 07 (Part 2): MCTS & PUCT Protocol Verification ===
+Branch A -> Q=0.75, N=5, P=0.50 | PUCT = 1.2500
+Branch B -> Q=0.55, N=1, P=0.40 | PUCT = 1.7500
+Selected Next Node for Expansion: Branch B: Retrograde Penrose Extraction
+[OK] Part 2 (Communications & Protocol Officer) verification passed.
+[OK] 12 self-checks passed (zero-visit, backprop accumulation, expansion links, clamping, traversal, error handling, trajectory, run_search Q-values, dead-end evaluation, terminal marking).
+
+=== PUCT Sensitivity Sweep (c_puct variation) ===
+  c_puct |    PUCT(A)     Q(A)     U(A) |    PUCT(B)     Q(B)     U(B) |     Selected
+-----------------------------------------------------------------------------------------------
+     0.5 |     0.8870   0.8000   0.0870 |     0.7907   0.5000   0.2907 |   Branch A *
+     1.0 |     0.9739   0.8000   0.1739 |     1.0814   0.5000   0.5814 |   Branch B *
+     1.5 |     1.0609   0.8000   0.2609 |     1.3721   0.5000   0.8721 |   Branch B *
+     2.0 |     1.1478   0.8000   0.3478 |     1.6628   0.5000   1.1628 |   Branch B *
+     2.5 |     1.2348   0.8000   0.4348 |     1.9534   0.5000   1.4534 |   Branch B *
+[OK] PUCT sensitivity sweep: exploitation -> exploration crossover confirmed.
+
+=== Full MCTS Search Demo (12 iterations) ===
+Root visits after search: N=12
+Direct children of root:
+  Path A: Prograde frame-dragging slingshot                N=  8  Q=0.8400  P=0.50
+  Path B: Retrograde Penrose energy extraction             N=  4  Q=0.6500  P=0.35
+  Path C: Direct radial plunge (DANGER)                    N=  0  Q=0.0000  P=0.15
+
+Recommended path (most visited): Path A: Prograde frame-dragging slingshot
+  Visit count: 8,  Q-value: 0.8400
+[OK] MCTS demo: safe navigation path selected over dangerous plunge.
+
+$ python prm_evaluator.py
+=== Subsystem 07 (Part 3): PRM vs. ORM & Math-Shepherd Verification ===
+Rigorous Chain       | ORM=1.00 | PRM(min)=0.940 | PRM(prod)=0.831 | PRM(geo)=0.940
+False-Positive Trap  | ORM=1.00 | PRM(min)=0.120 | PRM(prod)=0.106 | PRM(geo)=0.473
+Math-Shepherd Step Estimation (M=4 rollouts): {'soft_label': 0.75, 'hard_label': 1.0}
+Trap step labels (M=4 supplied simulated rollouts): {'soft_label': 0.25, 'hard_label': 1.0}
+Valid algebra        | ORM=1.00 | PRM(min)=0.940 | PRM(prod)=0.831 | PRM(geo)=0.940
+Double-sign trap     | ORM=1.00 | PRM(min)=0.120 | PRM(prod)=0.014 | PRM(geo)=0.238
+Long-chain check (1000 scores of 0.12): product=0.0; geometric_mean=0.120
+Length comparison (all unmarked scores are 0.94):
+  T=  3 | min=0.940000 | prod=0.830584 | geo=0.940000
+  T= 10 | min=0.940000 | prod=0.538615 | geo=0.940000
+  T=100 | min=0.940000 | prod=0.002055 | geo=0.940000
+[OK] Reduction, empty/single-step, marker precedence and rollout boundary checks passed.
+[OK] Part 3 (Data & Payload Specialist) verification passed.
+
+$ python horizon_pruner.py
+=== Mission 07: Security & Ethics Sentinel ===
+Surviving Steps: 1/3
+Pruned at Step: 2
+Reward Hacking Detected: True
+Steps Skipped: 1
+Estimated tokens saved (proxy): 15
+[Step 2] ANOMALY 07 REWARD HACKING: SYCOPHANTIC_FILLER_DETECTED ('let us carefully verify this 100% rigorous step') -> Score penalized 0.96 -> 0.19
+[Step 2] EVENT HORIZON BREACH: Adjusted PRM score 0.19 < tau (0.45). Branch severed!
+[OK] Part 4 verification and edge-case tests passed.
 ```
 
 ---
@@ -378,7 +452,7 @@ Paste the terminal output from running all four verification suites (`python tot
 
 > **Central Question:** *How can inference-time compute scaling unlock complex multi-step reasoning capabilities beyond pre-training parameter limits, and why is step-level process verification (PRM) essential when searching over deep reasoning trees?*
 
-`[Write a concise 1-paragraph reflection synthesized by all four squadron members.]`
+Test-time compute lets a model with fixed weights do more reasoning per question: rather than committing to one left-to-right chain, the system generates candidate steps, scores them and decides where to spend the next unit of compute, so problems beyond what a single forward pass can solve become reachable through search. Our modules showed both the gain and the cost of this. In the Game-of-24 benchmark, solve rates rose from 0/12 at a budget of 10 expansions to 10–11/12 at 100–200, while ToT-DFS matched or beat every beam width, because with roughly 30 children per node BFS spent its budget scoring wide layers rather than going deeper. In MCTS, $c_{\text{puct}}$ decided how that budget was split between exploiting known-good branches and exploring under-visited ones, and the dangerous radial plunge received zero visits. Search only helps if the signal guiding it is trustworthy, however, which is why step-level verification is essential. In our PRM fixture, an outcome reward model gave a perfect 1.00 to a trajectory whose two sign errors cancelled out, while the PRM's `min` reduction exposed the flawed step at 0.12; in a deep tree, an outcome-only signal would let such branches survive and absorb compute. Step scores are also an attack surface: a sycophantic filler step scored 0.96 until the Event Horizon Pruner penalised it to 0.192 and cut the branch at step 2. Our verifiers are rule-based and not calibrated probabilities, so we conclude that inference-time scaling is only as reliable as its process verifier, which must be robust both to honest reasoning errors and to deliberate reward hacking.
 
 ---
 
