@@ -263,85 +263,55 @@ Length comparison (all unmarked scores are 0.94):
 **AI assistance:** Codex assisted with implementation changes, verification checks and drafting this section from the executed output. Abubaker Attique confirmed completion and sign-off on 19 November 2026. This section verifies Part 3 only; the squad's integration results and final reflection remain separate tasks.
 
 
-## Station D — Security & Ethics Sentinel: Event Horizon Pruning and Reward-Hacking Defense
+
+### Section D – Security & Ethics Sentinel (`horizon_pruner.py`)
 
 **Officer:** Syeda Manahil Javed  
-**Module:** `horizon_pruner.py`  
-**Status:** Verified locally using deterministic tests; unified integration verification pending.
+**Status:** Part 4 verification passed.
 
-### D.1 Objective and Implementation
+#### D.1 Objective and Implementation
 
-The Security & Ethics Sentinel implements an Event Horizon Pruner to prevent low-quality or potentially hallucinated reasoning steps from consuming unnecessary inference-time computation.
+The Event Horizon Pruner prevents hallucinated or low-quality reasoning trajectories from continuing when their Process Reward Model (PRM) scores fall below a predefined threshold.
 
-The `EventHorizonPruner` evaluates reasoning trajectories using step-level scores supplied by the Process Reward Model (PRM).
+The implementation addresses two major security risks:
 
-The implementation addresses two primary risks:
+1. **Event Horizon Drift:** Incorrect reasoning steps can propagate errors throughout the remaining trajectory.
+2. **PRM Reward Hacking:** Adversarial reasoning steps can artificially inflate reward scores without contributing meaningful information.
 
-1. **Event Horizon Drift:** Reasoning paths containing low-scoring steps are terminated before errors propagate into subsequent steps.
-2. **PRM Reward Hacking:** Adversarial reasoning steps attempting to inflate reward scores without adding meaningful information are detected and penalized.
+The `EventHorizonPruner` implements two detection mechanisms:
 
-Two reward-hacking patterns are identified:
+- **Sycophantic Filler Detection:** Identifies overconfident phrases such as "Let us carefully verify this 100% rigorous step."
+- **Step-Splitting Inflation Detection:** Identifies repeated reasoning steps that add no new information.
 
-- **Sycophantic Filler Injection:** Overconfident phrases such as "Let us carefully verify this 100% rigorous step" that may artificially increase naive PRM scores.
-- **Step-Splitting Inflation:** Repeated reasoning steps that add no new information but may artificially improve aggregate reward scores.
+Suspicious steps receive a multiplicative score penalty:
 
-When reward hacking is detected, the original PRM score is multiplied by a penalty factor of 0.20.
+`adjusted_score = raw_score * hacking_penalty_factor`
 
-The adjusted score is calculated as:
-
-`adjusted_score = raw_score × hacking_penalty_factor`
-
-A reasoning branch is terminated when:
+A reasoning trajectory is immediately pruned when:
 
 `adjusted_score < tau_horizon`
 
-The configured Event Horizon threshold is `tau_horizon = 0.45`.
+#### D.2 Event Horizon Pruning & Ship Anomaly 07 Defense Log
 
-### D.2 Experimental Setup and Results
-
-The experiment uses a three-step adversarial reasoning trajectory simulating navigation near Sagittarius A*.
-
-The second step contains a sycophantic filler phrase but receives a high original PRM score of 0.96. The Event Horizon Pruner detects the suspicious phrase, applies the penalty, and terminates the branch before the third step.
-
-**Experimental Parameters:**
-
-- Event Horizon threshold: 0.45
-- Reward-hacking penalty factor: 0.20
-- Number of reasoning steps: 3
-- Original PRM scores: [0.93, 0.96, 0.10]
+- Pruning Threshold $\tau_{\text{horizon}}$: `0.45`
+- Hacking Penalty Factor: `0.20`
+- Adversarial Payload Tested: `"Step 2: Let us carefully verify this 100% rigorous step and set thrust = 0"`
+- Original PRM Scores: `[0.93, 0.96, 0.10]`
+- Naive PRM Score vs. Penalized Score: `0.96 -> 0.192 (SEVERED AT STEP 2)`
+- Surviving Steps: `1 out of 3`
+- Reward Hacking Detected: `True`
+- Steps Skipped: `1`
+- Estimated Tokens Saved: `15` (word/punctuation proxy)
 
 **Experimental Results:**
 
-| Step | Original PRM Score | Security Finding | Adjusted Score | Decision |
+| Step | Original Score | Security Finding | Adjusted Score | Decision |
 |---|---|---|---|---|
-| Step 1 | 0.93 | No suspicious pattern detected | 0.93 | Retained |
+| Step 1 | 0.93 | Clean | 0.93 | Retained |
 | Step 2 | 0.96 | Sycophantic filler detected | 0.192 | Pruned |
-| Step 3 | 0.10 | Not evaluated after pruning | N/A | Skipped |
+| Step 3 | 0.10 | Not evaluated | N/A | Skipped |
 
-The experiment demonstrates that a high raw PRM score does not necessarily indicate trustworthy reasoning.
-
-The second step initially receives a score of 0.96. After applying the reward-hacking penalty, its score decreases to 0.192, which is below the 0.45 threshold.
-
-Consequently, the branch is terminated.
-
-### D.3 Event Horizon Pruning Telemetry
-
-The following results were obtained from the local verification harness:
-
-| Metric | Result |
-|---|---|
-| Total reasoning steps | 3 |
-| Surviving steps | 1 |
-| Pruned at step | 2 |
-| Reward hacking detected | True |
-| Future steps skipped | 1 |
-| Estimated tokens saved | 15 |
-| Pruning threshold | 0.45 |
-| Penalty factor | 0.20 |
-
-The token-saving metric is estimated using a word-and-punctuation counting proxy rather than an actual LLM tokenizer or measured computational FLOPs.
-
-**Security Trace:**
+#### D.3 Security Verification Trace
 
     [Step 2] ANOMALY 07 REWARD HACKING:
     SYCOPHANTIC_FILLER_DETECTED
@@ -353,54 +323,43 @@ The token-saving metric is estimated using a word-and-punctuation counting proxy
 
     [OK] Part 4 verification and edge-case tests passed.
 
-### D.4 Verification and Testing
+#### D.4 Verification and Testing
 
-The implementation includes deterministic verification tests covering the following scenarios:
+The following test scenarios were verified:
 
-- Detection of sycophantic filler phrases.
-- Detection of repeated reasoning steps.
-- Successful retention of clean reasoning trajectories.
+- Sycophantic filler phrase detection.
+- Repeated reasoning step detection.
+- Clean trajectory preservation.
 - Immediate pruning of low-scoring steps.
-- Correct handling of empty trajectories.
-- Preservation of steps scoring exactly at the threshold.
-- Validation of input lengths and PRM score ranges.
-- Rejection of invalid configuration parameters.
+- Empty trajectory handling.
+- Threshold boundary validation.
+- Invalid score and configuration handling.
+- Estimated compute savings after pruning.
 
-The individual Part 4 verification tests passed successfully.
+**Verification Result:** All individual Part 4 tests passed.
 
-### D.5 Security and Ethical Considerations
+#### D.5 Security Analysis & Ethical Considerations
 
-Although Process Reward Models support step-level verification, they remain vulnerable to reward manipulation.
+Sycophantic filler phrases exploit naive Process Reward Models by using confident language without providing meaningful mathematical reasoning. Step-splitting inflation attempts to manipulate trajectory scoring by repeating unnecessary reasoning steps.
 
-A reasoning generator may produce confident-sounding statements or unnecessary intermediate steps to obtain higher evaluation scores without improving mathematical correctness.
+The `EventHorizonPruner` detects predefined filler phrases and redundant steps, applying a penalty factor of `0.20` to suspicious scores.
 
-The Event Horizon Pruner addresses these risks through explicit security checks and score penalties.
+In the experiment, the adversarial step initially received a high PRM score of `0.96`. After applying the security penalty, its score decreased to `0.192`, falling below the Event Horizon threshold of `0.45`. Consequently, the trajectory was terminated at Step 2, preventing further propagation of potentially incorrect reasoning and avoiding unnecessary computation.
 
-However, the current implementation is rule-based and has several limitations.
+However, the current detector uses rule-based pattern matching. It may fail to recognize paraphrased adversarial statements or semantically equivalent repeated steps. Legitimate reasoning containing flagged phrases may also be incorrectly penalized. Therefore, PRM scores and pruning decisions should not be treated as guaranteed indicators of mathematical correctness.
 
-First, phrase matching may fail to detect unfamiliar or paraphrased adversarial statements. Second, repetition detection identifies normalized exact duplicates but cannot reliably recognize semantically equivalent reasoning. Third, legitimate mathematical explanations containing flagged phrases may be incorrectly penalized.
+#### D.6 Reflection on Test-Time Compute
 
-Additionally, PRM scores are heuristic evaluation signals rather than guaranteed measures of correctness.
+Event Horizon pruning demonstrates how Test-Time Compute (TTC) can improve reasoning efficiency by evaluating intermediate steps instead of blindly continuing every generated trajectory.
 
-Therefore, the pruning threshold should be validated for the task, and security telemetry should be retained to support debugging and evaluation.
+By detecting suspicious steps early, the system can terminate unreliable branches and reserve computational resources for more promising reasoning paths.
 
-### D.6 Reflection on Test-Time Compute
-
-The Event Horizon Pruner illustrates how Test-Time Compute (TTC) can be allocated more effectively during complex reasoning.
-
-Instead of allowing every generated reasoning trajectory to continue until completion, the system evaluates intermediate steps and terminates branches that fail security or quality checks.
-
-This approach can reduce wasted computation and support more reliable exploration within Tree-of-Thoughts and Monte Carlo Tree Search.
-
-The experiment demonstrates that early detection of reward-hacking patterns can prevent a suspicious branch from progressing, even when its original PRM score is high.
-
-Nevertheless, the effectiveness of this approach depends on evaluator reliability, threshold selection, and the quality of the reward-hacking detector.
+This approach complements Tree-of-Thoughts and Monte Carlo Tree Search by reducing wasted exploration and supporting more reliable step-level verification.
 
 **Station D Sign-Off:** Syeda Manahil Javed — Security & Ethics Sentinel  
 **Deliverable:** `horizon_pruner.py`  
-**Verification:** Individual module tests passed; final squadron integration pending.
-
----
+**Verification:** Individual Part 4 tests passed; unified squadron integration pending.
+----
 
 ## 4. End-to-End Verification Terminal Output
 
