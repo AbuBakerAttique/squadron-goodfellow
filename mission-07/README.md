@@ -35,7 +35,7 @@ Before compiling your final documentation and submitting to Moodle, ensure all f
 - [X] **Part 2 — Communications & Protocol Officer (`mcts_protocol.py`):** Implement `MCTSNode` and the 4-phase `MCTSEngine` (`puct_score` using $\text{PUCT}(s,a) = Q(s,a) + c_{\text{puct}} P(a\mid s)\frac{\sqrt{N(s)}}{1+N(s,a)}$, `select_best_child`, `expand`, `simulate_rollout`, and `backpropagate`).
 - [X] **Part 3 — Data & Payload Specialist (`prm_evaluator.py`):** Implement `ProcessRewardEvaluator` supporting step-level scoring, trajectory reductions (`min`, `prod`, `geometric_mean`), comparison against `OutcomeRewardEvaluator` on false-positive cancellation traps, and *Math-Shepherd* Monte Carlo soft/hard step label estimation.
 - [X] **Part 4 — Security & Ethics Sentinel (`horizon_pruner.py`):** Implement `EventHorizonPruner` to sever hallucinated branches when $r_{\text{PRM}}(z_t) < \tau_{\text{horizon}}$ and detect/penalize adversarial PRM reward-hacking payloads (sycophantic filler phrases & artificial step-splitting inflation).
-- [ ] **Part 5 — All 4 Squadron Officers (`mission-07-doc.md` $\rightarrow$ `mission-07-doc.pdf`):** Complete `mission-07-doc.md` after all 4 modules pass verification, export it to **`mission-07-doc.pdf`**, and upload the PDF to **Moodle**.
+- [X] **Part 5 — All 4 Squadron Officers (`mission-07-doc.md` $\rightarrow$ `mission-07-doc.pdf`):** Complete `mission-07-doc.md` after all 4 modules pass verification, export it to **`mission-07-doc.pdf`**, and upload the PDF to **Moodle**.
 
 ---
 
