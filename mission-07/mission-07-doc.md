@@ -18,13 +18,13 @@
 | **Systems Architect** | Abdul Jalil Memon | `tot_solver.py` | PASS / VERIFIED (harness + 8 self-checks + Game-of-24 benchmark) |
 | **Communications & Protocol Officer** | Fatima Siddiqa | `mcts_protocol.py` | PASS / VERIFIED - completed on 21 November |
 | **Data & Payload Specialist** | Abubaker Attique | `prm_evaluator.py` | PASS / VERIFIED — completed and signed off by Abubaker Attique on 19 November 2026 |
-| **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | `[PASS / VERIFIED]` |
+| **Security & Ethics Sentinel** | Syeda Manahil Javed | `horizon_pruner.py` | PASS / VERIFIED — completed on 22 November 2026 |
 
 ---
 
 ## 2. Integrated System 2 Test-Time Compute Architecture
 
-The diagrams below illustrate how our squadron's four modules interact during inference-time search to prevent AURA's navigation trajectory from crossing the Sagittarius A* Event Horizon. (you can denerate your own diagram with mermaid!)
+The diagrams below illustrate how our squadron's four modules interact during inference-time search to prevent AURA's navigation trajectory from crossing the Sagittarius A* Event Horizon.
 
 ### 2.1 ASCII System Architecture (Universal PDF Export Compatible)
 
