@@ -16,7 +16,7 @@
 | Station Role | Cadet Full Name | Deliverable File | Verification Status |
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | `[Insert Name]` | `rewoo_planner.py` | `[PASS / VERIFIED]` |
-| **Communications & Protocol Officer** | `[Insert Name]` | `reflexion_surgeon.py` | `[PASS / VERIFIED]` |
+| **Communications & Protocol Officer** | Fatima Siddiqa | `reflexion_surgeon.py` | `PASS / VERIFIED` |
 | **Data & Payload Specialist** | Abubaker Attique | `memgpt_pager.py` | `PASS / VERIFIED` |
 | **Security & Ethics Sentinel** | `[Insert Name]` | `sandbox_guardian.py` | `[PASS / VERIFIED]` |
 
@@ -113,7 +113,7 @@ graph TD
 | **Trial 2** | `KeyError (Line 5)` | `Use dict.get() or verify key 'flux' exists in telemetry packet.` | `False` | `FAIL` |
 | **Trial 3** | `None` | `PASS` | `False` | **PASS** |
 
-- **Protocol Analysis:** `[Explain why Huang et al. (2023) found that intrinsic self-correction fails without an external oracle, and how unit-test grounding + SHA-256 cycle detection guarantee convergence.]`
+- **Protocol Analysis:** Huang et al. (2023) showed that when an LLM revises its own answer without external feedback, it cannot reliably tell correct output from incorrect output, so accuracy stays flat or drops. Our baseline reproduces two failure modes. In (A), an intrinsic self-check approved the buggy normalize_xray_flux on the first trial, but our executing UnitTestEvaluator showed it still raised ZeroDivisionError. In (B), a self-check that was never satisfied produced only comment edits, and 3 of 3 rewrites hashed identically to the original. Grounding fixes this because the oracle's verdict is deterministic and its traceback is a concrete signal: the grounded loop went from ZeroDivisionError (line 3) to KeyError (line 5) to a pass in 3 trials, with each reflection written from a real traceback. SHA-256 cycle detection supplements this by detecting when the Actor repeats an already-evaluated patch, skipping the wasted evaluation, and aborting after repeated duplicates. It does not guarantee convergence. Convergence still depends on the Actor producing a new, better patch within max_trials.
 
 ### Section C — Data & Payload Specialist (`memgpt_pager.py`)
 
@@ -193,7 +193,55 @@ Full retrieval table (unit weights; including flushed summary):
 
 Paste the terminal output from running all four verification suites (`python rewoo_planner.py`, `python reflexion_surgeon.py`, `python memgpt_pager.py`, and `python sandbox_guardian.py`):
 
+
 ```text
+# Part 2 - Communications & Protocol Officer (Fatima Siddiqa)
+==============================================================================
+  Subsystem 08 (Part 2): Reflexion Surgeon & Traceback Parser Verification
+==============================================================================
+
+--- Test 1: TracebackParser ---
+  Parsed: ZeroDivisionError at telemetry_parser.py:3 | division by zero when window_sec=0
+  Multi-frame: deepest = sensor.py:7, frames=[('main.py', '10'), ('diagnostics.py', '42'), ('sensor.py', '7')]
+  [OK] bare AssertionError, StopIteration, dotted names, chained traces, fallbacks verified.
+
+--- Test 2: Reflexion Repair Loop (Grounded UnitTestEvaluator, Omega=3) ---
+  Repair Success: True in 3 trials (3 real executions)
+    Trial 1: [ZeroDivisionError @ line 3] dup=False | [Reflection telemetry_parser.py:3 | ZeroDivisionError]: Fault 'float division by zero'. Offending code: `return packet['flux'] / packet['window_sec']`. Constraint for next trial: Guard denominator against zero before dividing telemetry flux.
+    Trial 2: [KeyError @ line 5] dup=False | [Reflection telemetry_parser.py:5 | KeyError]: Fault ''flux''. Offending code: `return packet['flux'] / packet['window_sec']`. Constraint for next trial: Use dict.get() or verify key 'flux' exists in telemetry packet.
+    Trial 3: [PASS] dup=False | PASS
+  Episodic Buffer (len=2), duplicates=0, stopped_reason=passed
+  [OK] Oracle executes code: wrong value, SyntaxError, blocked import, timeout (signal + trace paths), guard hook verified.
+
+--- Test 3: SHA-256 Duplicate Patch Detection ---
+  [OK] Comments/blank lines/spacing ignored; structural + indentation changes detected.
+
+--- Test 4: Bounded Episodic Buffer (Omega=3) ---
+    [Reflection test.py:2 | TestError]: Fault 'fault_2'. Constraint for next trial...
+    [Reflection test.py:3 | TestError]: Fault 'fault_3'. Constraint for next trial...
+    [Reflection test.py:4 | TestError]: Fault 'fault_4'. Constraint for next trial...
+  [OK] Tail_Omega invariant: 5 reflections in, newest 3 retained, oldest evicted.
+
+--- Test 5: Grounded vs. Ungrounded Reflexion (Huang et al., 2023) ---
+  (A) Intrinsic verdict: converged=True in 1 trial(s)
+      Real unit tests:   passed=False -> ZeroDivisionError: float division by zero
+  (B) Converged=False; behaviour-identical rewrites flagged by SHA-256: 3/3
+  Grounded (unit-test oracle):  SUCCESS in 3 trials, verified by execution
+  Ungrounded (intrinsic eval):  (A) false positive, (B) no-op drift
+  [OK] External grounding (M_e) is what makes Reflexion converge.
+
+--- Test 6: Repair Loop Exhaustion ---
+  success=False, trials=3, stopped_reason=max_trials
+  [OK] Graceful exhaustion handling verified.
+
+--- Test 7: Active Cycle Detection (Actor stuck in a loop) ---
+  trials_used=3/6, evaluator calls=1, duplicates=2, stopped_reason=cycle_detected
+  [OK] Duplicate patches skip evaluation, warn the Actor via the buffer, and abort on repeat.
+
+==============================================================================
+  [OK] Part 2 (Communications & Protocol Officer) — ALL VERIFICATIONS PASSED
+==============================================================================
+
 # Part 3 - Data & Payload Specialist (Abubaker Attique)
 $ python3 -B mission-08/memgpt_pager.py
 === Subsystem 08 (Part 3): MemGPT Virtual Pager & Tri-Factor Retrieval Verification ===
@@ -214,7 +262,6 @@ Full retrieval table (unit weights; including flushed summary):
 [OK] Part 3 (Data & Payload Specialist) verification passed.
 
 # Part 1 - Systems Architect: [paste rewoo_planner.py output here]
-# Part 2 - Communications & Protocol Officer: [paste reflexion_surgeon.py output here]
 # Part 4 - Security & Ethics Sentinel: [paste sandbox_guardian.py output here]
 ```
 
