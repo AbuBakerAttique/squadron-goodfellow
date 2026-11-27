@@ -136,6 +136,13 @@ class EpistemicContradictionResolver:
                                        winner.value, weight, superseded, explanation)
 
 
+def _maxsim_kernel(query_tokens: torch.Tensor, document_tokens: torch.Tensor,
+                   query_mask: torch.Tensor, doc_mask: torch.Tensor) -> torch.Tensor:
+    """Tensor-only kernel shared by eager and optional compiled execution."""
+    sim = torch.einsum("id,mjd->mij", query_tokens, document_tokens)
+    return _reduce_maxsim(sim, query_mask[None, :], doc_mask)
+
+
 class TorchTPUHBMIndexer:
     """Device-resident BF16 index with eager TPU/CUDA/CPU dispatch.
 
@@ -145,9 +152,9 @@ class TorchTPUHBMIndexer:
 
     def __init__(self, use_torch_compile: bool = False):
         self.device = get_compute_device()
-        self.scorer_fn = colbert_maxsim_bfloat16
+        self.scorer_fn = _maxsim_kernel
         if use_torch_compile and self.device.type == "tpu":
-            self.scorer_fn = torch.compile(colbert_maxsim_bfloat16, backend="tpu")
+            self.scorer_fn = torch.compile(_maxsim_kernel, backend="tpu")
         self.query_tokens: Optional[torch.Tensor] = None
         self.document_tokens: Optional[torch.Tensor] = None
 
@@ -172,8 +179,7 @@ class TorchTPUHBMIndexer:
             raise ValueError("Query needs at least one valid token")
         self.query_tokens = _normalise(query_emb.to(self.device))
         self.document_tokens = _normalise(doc_embs.to(self.device))
-        sim = torch.einsum("id,mjd->mij", self.query_tokens, self.document_tokens)
-        return _reduce_maxsim(sim, qm[None, :], dm)
+        return self.scorer_fn(self.query_tokens, self.document_tokens, qm, dm)
 
     def rank_documents_maxsim(self, query_emb: torch.Tensor, doc_embs: torch.Tensor,
                               doc_ids: List[str], query_mask: Optional[torch.Tensor] = None,
@@ -280,4 +286,18 @@ if __name__ == "__main__":
             raise AssertionError("Expected invalid input to be rejected")
     print("[PASS] FP32 reference, padding, compatibility, empty-index and validation checks.")
     print("[PASS] Contradiction ordering, agreeing claims and entity/date validation checks.")
+    # Exercise the optional dispatch wiring without claiming to run a TPU compiler.
+    from types import SimpleNamespace
+    from unittest.mock import Mock, patch
+
+    compiled_spy = Mock(wraps=_maxsim_kernel)
+    with patch(__name__ + ".get_compute_device", return_value=SimpleNamespace(type="tpu")), \
+            patch.object(torch, "compile", return_value=compiled_spy) as compile_spy:
+        dispatch_indexer = TorchTPUHBMIndexer(use_torch_compile=True)
+    compile_spy.assert_called_once_with(_maxsim_kernel, backend="tpu")
+    dispatch_indexer.device = torch.device("cpu")
+    dispatch_result = dispatch_indexer.rank_documents_maxsim(mq, md, ["negative", "padding"], qm, dm)
+    compiled_spy.assert_called_once()
+    assert dispatch_result == [("negative", -1.0), ("padding", -math.inf)]
+    print("[PASS] Optional compile dispatch wiring (mocked compiler; CPU kernel execution).")
     print("[PASS] Part 3 TorchTPU bfloat16 MaxSim Indexer & Contradiction Resolver verified!")

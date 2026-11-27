@@ -17,7 +17,7 @@
 | :--- | :--- | :--- | :--- |
 | **Systems Architect** | `[Insert Name]` | `adaptive_rag_tpu_router.py` | `[PASS / VERIFIED]` |
 | **Communications & Protocol Officer** | `[Insert Name]` | `crag_selfrag_protocol.py` | `[PASS / VERIFIED]` |
-| **Data & Payload Specialist** | Abubaker Attique | `torchtpu_hbm_indexer.py` | Part 3 checks PASS; author review/sign-off pending |
+| **Data & Payload Specialist** | Abubaker Attique | `torchtpu_hbm_indexer.py` | PASS / VERIFIED — completed and signed off by Abubaker Attique on 27 November 2026 |
 | **Security & Ethics Sentinel** | `[Insert Name]` | `route_hijack_sentinel.py` | `[PASS / VERIFIED]` |
 
 ---
@@ -148,12 +148,12 @@ graph TD
 ### Section C — Data & Payload Specialist (`torchtpu_hbm_indexer.py`)
 
 **Officer:** Abubaker Attique<br>
-**Verification date:** 18 November 2026<br>
+**Verification date:** 27 November 2026<br>
 **Command from repository root:** `.venv/bin/python -B mission-09/torchtpu_hbm_indexer.py`
 
 #### Implementation and hardware
 
-The briefing's `TorchTPUHBMIndexer.compute_maxsim` interface and separate `EpistemicContradictionResolver` are implemented. The original `TorchTpuHbmIndexer` spelling remains an alias, and its `resolve_contradictions` method delegates to the resolver so existing team imports remain compatible. The paired-batch `colbert_maxsim_bfloat16` helper is also retained.
+The briefing's `TorchTPUHBMIndexer.compute_maxsim` interface and separate `EpistemicContradictionResolver` are implemented. The original `TorchTpuHbmIndexer` spelling remains an alias, and its `resolve_contradictions` method delegates to the resolver so existing team imports remain compatible. The paired-batch `colbert_maxsim_bfloat16` helper is also retained. The optional TPU compile flag now wraps the tensor-only `_maxsim_kernel` actually used by `compute_maxsim` and document ranking; it no longer configures an unused scorer.
 
 The verified run used **CPU fallback**, PyTorch **2.14.1**, eager execution, and seed **42**. There was no TPU/HBM or CUDA benchmark. Embeddings are normalised in FP32 and converted to device-resident BF16 tensors. `torch.einsum("id,mjd->mij", ...)` computes the token similarities; document-token maxima are converted to FP32 before summing over query tokens. BF16 embeddings use two bytes per element versus four for FP32, but this is a storage property, not a measured hardware speedup. The normalisation and similarity computation also allocate temporary tensors.
 
@@ -188,7 +188,7 @@ The supplied 1978 fixture describes an intact blue supergiant, while the 2026 fi
 
 #### Verification evidence and limitations
 
-The harness passed checks for FP32 agreement, padding, BF16 storage, the paired-batch compatibility function, empty rankings, malformed inputs, contradiction ordering, agreeing claims and entity/date validation. TPU availability, TPU compilation and performance remain untested. The implementation computes a full `[documents, query_tokens, document_tokens]` similarity tensor, so large corpora would require batching to manage memory. A weighted winner is not a guarantee of factual correctness, particularly if metadata is unreliable.
+The harness passed checks for FP32 agreement, padding, BF16 storage, the paired-batch compatibility function, empty rankings, malformed inputs, contradiction ordering, agreeing claims and entity/date validation. A regression test mocks TPU device selection and the compiler, then verifies that ranking invokes the returned scorer with real CPU tensors and preserves padding results. This verifies dispatch wiring only. Actual TPU availability, TPU compilation and performance remain untested. The implementation computes a full `[documents, query_tokens, document_tokens]` similarity tensor, so large corpora would require batching to manage memory. A weighted winner is not a guarantee of factual correctness, particularly if metadata is unreliable.
 
 ```text
 [Data Specialist] Running bfloat16 ColBERT MaxSim on device: cpu
@@ -201,10 +201,11 @@ Claim weights (alpha=0.55, lambda=0.04, current_year=2026):
   NOOSPHERE_LMC_TELEMETRY_2026: authority=0.98; recency=1.000000; weight=0.989000
 [PASS] FP32 reference, padding, compatibility, empty-index and validation checks.
 [PASS] Contradiction ordering, agreeing claims and entity/date validation checks.
+[PASS] Optional compile dispatch wiring (mocked compiler; CPU kernel execution).
 [PASS] Part 3 TorchTPU bfloat16 MaxSim Indexer & Contradiction Resolver verified!
 ```
 
-**AI assistance:** Codex assisted with implementation, test execution and drafting this section from the captured output. Author review/sign-off is pending. These checks cover Part 3 only; the other officers' sections, squad integration and final PDF remain team tasks.
+**AI assistance:** Codex assisted with implementation, test execution and drafting this section from the captured output. Abubaker Attique confirmed completion and sign-off on 27 November 2026. These checks cover Part 3 only; the other officers' sections, squad integration and final PDF remain team tasks.
 
 ---
 
