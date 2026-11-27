@@ -15,7 +15,7 @@
 
 | Station Role | Cadet Full Name | Deliverable File | Verification Status |
 | :--- | :--- | :--- | :--- |
-| **Systems Architect** | `[Insert Name]` | `rewoo_planner.py` | `[PASS / VERIFIED]` |
+| **Systems Architect** | Abdul Jalil Memon | `rewoo_planner.py` | `PASS / VERIFIED` |
 | **Communications & Protocol Officer** | Fatima Siddiqa | `reflexion_surgeon.py` | `PASS / VERIFIED` |
 | **Data & Payload Specialist** | Abubaker Attique | `memgpt_pager.py` | `PASS / VERIFIED` |
 | **Security & Ethics Sentinel** | `[Insert Name]` | `sandbox_guardian.py` | `[PASS / VERIFIED]` |
@@ -87,7 +87,7 @@ graph TD
 ```
 
 **Architectural Summary:**
-- `[Write 3–4 sentences explaining how your four modules connect and how token budget, episodic memory capacity, and provenance security are enforced across the pipeline.]`
+- The ReWOO planner (Part 1) turns a task into a full `#E1..#EK` dependency graph in one Planner call. Its Worker runs that graph level by level, and the Solver reads all the evidence in one more call. This keeps the input-token cost linear in $K$ instead of quadratic. Any code patch or tool call that the plan produces passes through the AST `SandboxGuardian` (Part 4) before it runs. A failing run returns a real traceback to the `ReflexionSurgeon` (Part 2), which keeps at most $\Omega = 3$ reflections and stops repeated patches with SHA-256 hashes. Each reflection is checked by the MemoryGraft / A-MemGuard provenance audit (Part 4), which rejects `trust_score < 0.75` and injected directives, before it is written to the `MemGPTVirtualPager` (Part 3). The pager raises an interrupt at 70% of the token budget, moves the oldest half of the FIFO queue into archival memory, and returns ranked memories to the next ReWOO plan through $S(m, q)$. The token budget is therefore enforced in two places (ReWOO's linear prompts and MemGPT's 70% interrupt), episodic memory is capped by $\Omega$, and every write into persistent memory passes a provenance check.
 
 ---
 
@@ -102,7 +102,25 @@ graph TD
 | **$K = 5$** | `10,000` | `4,400` | `56.00%` | `2.27x` |
 | **$K = 8$** | `20,800` | `5,600` | `73.08%` | `3.71x` |
 
-- **Topological Execution Schedule:** `[Insert your level grouping for #E1..#E4, e.g., Level 0: [#E1, #E2], Level 1: [#E3], Level 2: [#E4], and explain when ReWOO's upfront DAG must fall back to dynamic re-planning.]`
+**Officer:** Abdul Jalil Memon<br>
+**Run from the `mission-08` folder:** `python rewoo_planner.py` (verification harness, self-checks and benchmark)
+
+- **The table above is the closed-form model, and it matches our run exactly.** We also printed $K = 1$ and $K = 2$: ReWOO costs **more** there (2,800 vs 1,200 and 3,200 vs 2,800 tokens), because it always pays for two copies of the $L_0$ prompt, one for the Planner and one for the Solver. The difference is $C_{\text{ReAct}} - C_{\text{ReWOO}} = (K-2)L_0 + (L_{\text{step}}+L_{\text{obs}})\,K(K-3)/2$. That is negative at $K = 2$ and equal to $+L_0$ at $K = 3$. So with any non-empty prompt, ReWOO pays off from three tool calls upwards.
+
+- **Topological Execution Schedule:** Level 0: `[#E1, #E2]` (X-ray scan and plasma probe are independent). Level 1: `[#E3]` (the Hohmann calculation needs both). Level 2: `[#E4]` (shield modulation needs the burn vector). Before a step runs, its `#E` references are replaced with the outputs of earlier levels.
+
+- **Measured benchmark (real prompts, not the formula).** To check the model, the script builds the actual input prompt of every LLM call and counts its tokens. A ReAct call sees the system prompt plus all earlier Thought/Action/Observation blocks. The ReWOO Planner sees the system prompt; the Solver sees the system prompt plus the plan and the evidence. We count tokens with a simple word-and-punctuation regex, not a real BPE tokenizer, so absolute numbers would differ for a production model, but the ratio between methods is what matters. Tool latency is simulated with a 50 ms sleep per tool call.
+
+| Plan | LLM calls (ReAct / ReWOO) | ReAct input tokens | ReWOO input tokens | Savings | Worker time, serial | Worker time, level-parallel |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Cygnus blueprint, $K=4$, 3 levels | 4 / 2 | 644 | 404 | 37.27% (1.59x) | ~202 ms | ~155 ms (1.31x) |
+| 6-scan survey, $K=8$, 3 levels | 8 / 2 | 1,621 | 589 | 63.66% (2.75x) | ~404 ms | ~154 ms (2.63x) |
+
+  The measured savings are higher than the formula's at the same $K$ for a reason the constant-length model leaves out. ReAct's actions carry the **resolved** arguments, so the full text of `#E1` and `#E2` is copied again into the `#E3` action and then into `#E4`. ReWOO's plan carries only the short symbolic `#E3`. Latency follows the number of levels, not $K$: the 8-step survey takes the same three 50 ms rounds as the 4-step plan. ReAct cannot do this, because each Thought must wait for the previous Observation. (The timings vary slightly between runs.)
+
+- **When the upfront DAG must fall back to re-planning.** ReWOO commits to its whole plan before it sees any observation. That works when the tool chain is known in advance and later arguments only *reuse* earlier outputs. It breaks when an observation should *change the plan*: a sensor fault (`ERR_CORONA_SPIKE`), a tool that crashes, or a result that makes the remaining steps pointless or calls for a different tool. Without a fallback, the error string is passed into every downstream step. Our `execute_dag` sends both `ERR_` outputs and tool exceptions to `fallback_replan_fn(var_name, error)`. In the harness, `#E1` returns `ERR_CORONA_SPIKE`, the fallback supplies a backup flux reading, and `#E3`/`#E4` run with the replacement. Errors the fallback cannot fix are recorded in `failed_steps` so the caller can re-plan. If the task is open-ended or exploratory, so that the next tool really depends on what was just seen, interleaved ReAct is the better choice even at $O(K^2)$ cost.
+
+- **Defects fixed in the starter.** Each fix has a regression self-check. (1) Substitution used `str.replace` and so rewrote the `#E1` prefix inside `#E10`. In an 11-step plan, `#E11` received `T1(x1)0` instead of `#E10`'s output. Text that was already substituted was also scanned again, so a tool output containing "#E2" was overwritten. Substitution is now a single regex pass over whole `#E\d+` tokens. (2) A duplicated `#E` variable or a malformed step line was silently dropped, so the plan ran with steps missing; both now raise `ValueError`. (3) An undefined reference was reported as a cycle; the two cases now get separate errors. (4) A tool that raised an exception skipped the fallback re-planner. (5) Unknown tools were only detected after earlier tools had already run. (6) Steps in the same level were never actually run in parallel; `max_workers > 1` now runs each level on a thread pool, and the evidence is identical to the serial run. (7) Negative $K$ or token sizes were accepted.
 
 ### Section B — Communications & Protocol Officer (`reflexion_surgeon.py`)
 - **Reflexion Verbal RL Repair Trajectory ($\Omega = 3$):**
@@ -261,7 +279,39 @@ Full retrieval table (unit weights; including flushed summary):
 [OK] Ranking, invalidation, access timestamps, cosine and input validation checks passed.
 [OK] Part 3 (Data & Payload Specialist) verification passed.
 
-# Part 1 - Systems Architect: [paste rewoo_planner.py output here]
+# Part 1 - Systems Architect (Abdul Jalil Memon)
+$ python rewoo_planner.py
+=== Subsystem 08 (Part 1): ReWOO DAG Planner & Token Profiler Verification ===
+Parsed Steps (4): ['#E1', '#E2', '#E3', '#E4']
+Topological Parallel Execution Levels: [['#E1', '#E2'], ['#E3'], ['#E4']]
+  #E1 -> XRayFlux(Cygnus_X1_Corona_Sector_08)=4.2e37_erg/s
+  #E2 -> IonDensity(Veil_Nebula_Shock_Front)=14.8_cm^-3
+  #E3 -> DeltaV(flux=XRayFlux(Cygnus_X1_Corona_Sector_08)=4.2e37_erg/s, density=IonDensity(Veil_Nebula_Shock_Front)=14.8_cm^-3)=18.4_km/s
+  #E4 -> HarmonicLock(vector=DeltaV(flux=XRayFlux(Cygnus_X1_Corona_Sector_08)=4.2e37_erg/s, density=IonDensity(Veil_Nebula_Shock_Front)=14.8_cm^-3)=18.4_km/s)=STABLE
+
+--- Fallback re-planning: #E1 sensor emits ERR_CORONA_SPIKE ---
+  re-planned: ['#E1'] | #E3 -> DeltaV(flux=BackupFlux(#E1)=3.9e37_erg/s, density=IonDensity(Veil_Nebula_Shock_Front)=14.8_cm^-3)=18.4_km/s
+
+--- ReAct vs. ReWOO Cumulative Input Token Benchmark (L0=1200, L_step=120, L_obs=280) ---
+  K=1 tools | ReAct=  1200 tok | ReWOO= 2800 tok | Savings=-133.33% (0.43x)
+  K=2 tools | ReAct=  2800 tok | ReWOO= 3200 tok | Savings= -14.29% (0.88x)
+  K=3 tools | ReAct=  4800 tok | ReWOO= 3600 tok | Savings=  25.00% (1.33x)
+  K=5 tools | ReAct= 10000 tok | ReWOO= 4400 tok | Savings=  56.00% (2.27x)
+  K=8 tools | ReAct= 20800 tok | ReWOO= 5600 tok | Savings=  73.08% (3.71x)
+[OK] Part 1 (Systems Architect) verification passed.
+
+[OK] Self-checks passed: #E10 prefix collision, re-substitution, duplicate/malformed steps,
+     undefined vs cyclic refs, tool crash -> fallback, upfront tool check, inline plans,
+     parallel == sequential, closed-form token cost and K=3 break-even.
+
+--- Benchmark A: measured prompt tokens (regex word/punct tokenizer) ---
+  Cygnus K=4: L0=97 | ReAct=  644 tok in 4 calls | ReWOO= 404 tok in 2 calls | savings=37.27% (1.59x)
+  Survey K=8: L0=97 | ReAct= 1621 tok in 8 calls | ReWOO= 589 tok in 2 calls | savings=63.66% (2.75x)
+
+--- Benchmark B: Worker wall-clock, each tool sleeps 50 ms ---
+  Cygnus K=4: 3 levels | serial= 202.1 ms | level-parallel= 154.8 ms (1.31x)
+  Survey K=8: 3 levels | serial= 404.4 ms | level-parallel= 154.0 ms (2.63x)
+
 # Part 4 - Security & Ethics Sentinel: [paste sandbox_guardian.py output here]
 ```
 
